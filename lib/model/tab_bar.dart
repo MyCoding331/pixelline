@@ -6,10 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/pages.dart';
-import 'package:pixelline/screens/NSFW/nsfw.dart';
 
 class TabBarContainer extends StatefulWidget {
-  TabBarContainer({
+  const TabBarContainer({
     Key? key,
   }) : super(key: key);
 
@@ -34,19 +33,6 @@ class _TabBarContainerState extends State<TabBarContainer> {
     // getSubscription().then((value) => _updatePages());
   }
 
-  void _updatePages() {
-    _pages.clear(); // Clear the previous pages
-    _pages.addAll([
-      const Latest(),
-      const Popular(),
-      const RandomPage(),
-    ]);
-
-    if (isSubscription) {
-      _pages.add(const NSFW());
-    }
-  }
-
   Future<void> getSubscription() async {
     try {
       final promise = await account.get();
@@ -61,7 +47,9 @@ class _TabBarContainerState extends State<TabBarContainer> {
         ],
       );
       final newData = data.documents.map((e) => e.data['isSubscribed']);
-      print('newData = $newData');
+      if (kDebugMode) {
+        print('newData = $newData');
+      }
 
       // Check if at least one value in newData is true
       final isSubscribed = newData.contains(true);
@@ -70,7 +58,9 @@ class _TabBarContainerState extends State<TabBarContainer> {
         isSubscription = isSubscribed;
       });
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 

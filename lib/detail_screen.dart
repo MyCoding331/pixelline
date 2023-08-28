@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
-import 'package:lecle_downloads_path_provider/lecle_downloads_path_provider.dart';
+
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:pixelline/model/appwrite_sevices.dart';
@@ -462,11 +462,11 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
               icon: const Icon(Icons.delete_outline_rounded, size: 20),
               label: const Text("Remove", style: TextStyle(fontSize: 16.0)),
               style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                primary: Colors.red,
-                onPrimary: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
@@ -605,7 +605,6 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
   void openSubMenu(int index) {
     double screenHeight = MediaQuery.of(context).size.height;
     double desiredHeight = screenHeight * 0.7;
-    double tagHeight = screenHeight * 0.5;
 
     showModalBottomSheet(
       useSafeArea: true,

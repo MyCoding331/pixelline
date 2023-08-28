@@ -336,11 +336,11 @@ class _CardScreenState extends State<CardScreen> {
               icon: const Icon(Icons.delete_outline_rounded, size: 20),
               label: const Text("Remove", style: TextStyle(fontSize: 16.0)),
               style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                primary: Colors.red,
-                onPrimary: Colors.white,
+                backgroundColor: Colors.red,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),

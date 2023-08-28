@@ -363,7 +363,9 @@ class _FavScreenState extends State<FavScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('isNSFW =$isNSFWEnabled ');
+    if (kDebugMode) {
+      print('isNSFW =$isNSFWEnabled ');
+    }
     if (kDebugMode) {
       print(isNew);
       print(isOld);
@@ -416,7 +418,7 @@ class _FavScreenState extends State<FavScreen> {
                                       imageUrl: favorite.imageUrl,
                                     ),
                                   ),
-                                ).then((_) => loadFavorites('loading'));
+                                );
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(12.0),

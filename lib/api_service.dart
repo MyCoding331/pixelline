@@ -51,9 +51,9 @@ class ImageComponent extends StatelessWidget {
     final newImage = imagePath
         .replaceAll("wallpapers/thumb", "download")
         .replaceAll(".jpg", "-1080x1920.jpg");
-    final newPlaceHolderImage = imagePath
-        .replaceAll("wallpapers/thumb", "download")
-        .replaceAll(".jpg", "-320x240.jpg");
+    // final newPlaceHolderImage = imagePath
+    //     .replaceAll("wallpapers/thumb", "download")
+    //     .replaceAll(".jpg", "-320x240.jpg");
     final uniqueTag = UniqueKey().toString();
     return Hero(
         tag: uniqueTag,

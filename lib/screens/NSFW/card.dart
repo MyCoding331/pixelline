@@ -1,7 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, must_be_immutable
 
 import 'package:appwrite/appwrite.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
@@ -89,11 +88,15 @@ class _ImageCaedState extends State<CardPage> {
           imageUrl = image;
         });
       } else {
-        print('No FileObject found.');
+        if (kDebugMode) {
+          print('No FileObject found.');
+        }
       }
     } catch (e) {
       if (_isMounted) {
-        print('Failed to fetch images: $e');
+        if (kDebugMode) {
+          print('Failed to fetch images: $e');
+        }
       }
     }
   }

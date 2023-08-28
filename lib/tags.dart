@@ -1,4 +1,7 @@
+// ignore_for_file: must_be_immutable, library_private_types_in_public_api
+
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pixelline/container_screen.dart';
@@ -49,11 +52,15 @@ class _TagFetchingScreenState extends State<TagFetchingScreen> {
         });
       } else {
         // Handle error response
-        print('Error: ${response.statusCode}');
+        if (kDebugMode) {
+          print('Error: ${response.statusCode}');
+        }
       }
     } catch (e) {
       // Handle network or parsing error
-      print('Error: $e');
+      if (kDebugMode) {
+        print('Error: $e');
+      }
     }
   }
 

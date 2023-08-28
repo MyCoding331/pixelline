@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -206,7 +208,7 @@ class _SettingScreenState extends State<SettingScreen> {
         ],
       );
 
-      if (data.documents.isNotEmpty && data.documents[0].$id != null) {
+      if (data.documents.isNotEmpty) {
         setState(() {
           isSubscribed = true;
         });

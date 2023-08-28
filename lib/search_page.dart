@@ -1,8 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -131,8 +129,8 @@ class _SearchScreenState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    String randomImagePath = getRandomImage(imageData);
-    String inputText = '';
+    // String randomImagePath = getRandomImage(imageData);
+    // String inputText = '';
     // print(randomImagePath);
     // print(randomWallpaper!.url);
     return Scaffold(
@@ -176,11 +174,11 @@ class _SearchScreenState extends State<SearchPage> {
                         child: TextField(
                       // autofocus: true,
                       controller: _searchController,
-                      onChanged: (value) => {
-                        setState(() {
-                          inputText = value;
-                        })
-                      },
+                      // onChanged: (value) => {
+                      //   setState(() {
+                      //     inputText = value;
+                      //   })
+                      // },
                       onSubmitted: (_) => _search(),
                       style: const TextStyle(
                         color: Colors.black,

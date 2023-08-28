@@ -1,10 +1,14 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore: file_names
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:pixelline/wallpaper_screen.dart';
 
 class LocalAuth extends StatefulWidget {
+  const LocalAuth({super.key});
+
   @override
   _AuthPageState createState() => _AuthPageState();
 }
@@ -36,7 +40,9 @@ class _AuthPageState extends State<LocalAuth> {
       });
     } catch (e) {
       // Handle errors here
-      print('Authentication error: $e');
+      if (kDebugMode) {
+        print('Authentication error: $e');
+      }
     }
 
     if (authenticated) {

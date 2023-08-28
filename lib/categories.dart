@@ -220,7 +220,7 @@ class _MyCategoriesState extends State<Categories> {
             childCount: imageData.length,
           ),
         ),
-        SliverToBoxAdapter(
+        const SliverToBoxAdapter(
           child: SizedBox(height: 80), // Add some whitespace at the end
         ),
       ],

@@ -1,4 +1,5 @@
-import 'package:appwrite/appwrite.dart';
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +8,6 @@ import 'package:pixelline/categories.dart';
 import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/tab_bar.dart';
 import 'package:pixelline/search_page.dart';
-import 'package:pixelline/storage_screen.dart';
 import 'package:pixelline/fav_screen.dart';
 import 'package:pixelline/container_screen.dart';
 import 'package:pixelline/model/setting_page.dart';
@@ -26,7 +26,6 @@ class _WallpaperScreenState extends State<WallpaperScreen>
   int pageIndex = 0;
   final ScrollController _scrollController = ScrollController();
   List<String> favorites = [];
-  bool _isAppBarExpanded = false;
 
   double iconSize = 25.0;
 
@@ -39,9 +38,6 @@ class _WallpaperScreenState extends State<WallpaperScreen>
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      setState(() {
-        _isAppBarExpanded = _scrollController.offset > kToolbarHeight + 50;
-      });
       _controller;
       // loadFavorites();
     });
@@ -95,7 +91,7 @@ class _WallpaperScreenState extends State<WallpaperScreen>
   @override
   Widget build(BuildContext context) {
     pages.addAll([
-      TabBarContainer(),
+      const TabBarContainer(),
       const FavScreen(),
       const Categories(),
       const SearchPage(),
@@ -443,7 +439,7 @@ Widget buildIconButtonWithText(
               borderRadius: BorderRadius.circular(2000),
             ),
             backgroundColor: !isSelected ? Colors.black : Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal:18,vertical:10),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             shadowColor: Colors.transparent,
           ),
           child: Row(
@@ -459,7 +455,7 @@ Widget buildIconButtonWithText(
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
                     label,
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.bold),

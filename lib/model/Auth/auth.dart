@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:math';
 
 import 'package:pixelline/model/appwrite_sevices.dart';
@@ -82,7 +84,6 @@ class _AuthPageState extends State<AuthPage> {
             setState(() {
               _selectedIndex = 0;
             }),
-            if (kDebugMode) {print('Document created with ID: ${value.$id}')}
           });
 
       // ignore: use_build_context_synchronously
@@ -120,7 +121,6 @@ class _AuthPageState extends State<AuthPage> {
       //   ),
       // );
     } catch (error) {
-      print('Error during sign in: $error');
       // Handle any errors that occurred during sign in
     }
     setState(() {
@@ -374,10 +374,10 @@ class _AuthPageState extends State<AuthPage> {
                           ),
                         ),
                         child: isLogin
-                            ? Container(
+                            ? const SizedBox(
                                 // margin: EdgeInsets.all(12),
                                 height: 22, width: 22,
-                                child: const CircularProgressIndicator(
+                                child: CircularProgressIndicator(
                                   color: Colors.white,
                                   strokeWidth: 3.0,
                                 ),

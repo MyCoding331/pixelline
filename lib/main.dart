@@ -9,7 +9,6 @@ import 'package:pixelline/model/Auth/locaAuth.dart';
 import 'model/appwrite_sevices.dart';
 
 import 'wallpaper_screen.dart';
-import 'model/Auth/appwrite_auth_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -118,7 +117,7 @@ class _WallpaperAppState extends State<WallpaperApp> {
                   print(snapshot.data);
                 }
                 if (isLocked) {
-                  return LocalAuth();
+                  return const LocalAuth();
                 } else {
                   return const WallpaperScreen();
                 }
