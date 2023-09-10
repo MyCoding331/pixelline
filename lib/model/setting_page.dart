@@ -162,7 +162,7 @@ class _SettingScreenState extends State<SettingScreen> {
       final promise = await account.get();
       final email = promise.email;
       final name = promise.name;
-      await databases.createDocument(
+      await database.createDocument(
         databaseId: '64c5fbb3ec64e7ac95a2',
         collectionId: '64c5fbbd4ea89a9c47a7',
         documentId: ID.unique(),
@@ -199,7 +199,7 @@ class _SettingScreenState extends State<SettingScreen> {
       final email = promise.email;
       final name = promise.name;
 
-      final data = await databases.listDocuments(
+      final data = await database.listDocuments(
         databaseId: '64c5fbb3ec64e7ac95a2',
         collectionId: '64c5fbbd4ea89a9c47a7',
         queries: [

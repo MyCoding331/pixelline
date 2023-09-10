@@ -10,8 +10,14 @@ class Wallpaper {
   factory Wallpaper.fromJson(Map<String, dynamic> json) {
     return Wallpaper(
       id: json['id'],
-      url: json['image'] ?? "",
+      url: json['image'] ?? json['url'],
     );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+    };
   }
 }
 

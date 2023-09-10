@@ -10,10 +10,10 @@ class LocalAuth extends StatefulWidget {
   const LocalAuth({super.key});
 
   @override
-  _AuthPageState createState() => _AuthPageState();
+  _LocalAuthState createState() => _LocalAuthState();
 }
 
-class _AuthPageState extends State<LocalAuth> {
+class _LocalAuthState extends State<LocalAuth> {
   final LocalAuthentication _localAuthentication = LocalAuthentication();
   bool isAuth = false;
   @override
@@ -26,7 +26,7 @@ class _AuthPageState extends State<LocalAuth> {
     bool authenticated = false;
     try {
       authenticated = await _localAuthentication.authenticate(
-        localizedReason: 'Authenticate to access the app', // Displayed to user
+        localizedReason: 'Authenticate To Access The App', // Displayed to user
         options: const AuthenticationOptions(
           biometricOnly: false,
           useErrorDialogs: true,

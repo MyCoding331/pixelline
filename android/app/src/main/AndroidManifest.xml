@@ -25,9 +25,8 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-              <meta-data
-              android:name="com.google.android.gms.ads.APPLICATION_ID"
-              android:value="ca-app-pub-9647752195501415~2626443274"/>
+             
+            
   
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -39,5 +38,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3429438063173222~7726106536"/>
     </application>
 </manifest>

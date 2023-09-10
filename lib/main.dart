@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pixelline/model/Auth/auth.dart';
 import 'package:pixelline/model/Auth/locaAuth.dart';
@@ -12,7 +13,7 @@ import 'wallpaper_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
+  MobileAds.instance.initialize();
   Permission.storage.request();
   Permission.manageExternalStorage.request();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,

@@ -67,7 +67,7 @@ class _FavoriteUtilsState extends State<FavoriteUtils> {
   void addToFavorites() async {
     var promise = await account.get();
     try {
-      final document = await databases.createDocument(
+      final document = await database.createDocument(
         collectionId: collectionId,
         data: {
           'url': widget.image,
@@ -92,7 +92,7 @@ class _FavoriteUtilsState extends State<FavoriteUtils> {
     try {
       for (var document in widget.documents) {
         if (document.imageUrl == widget.image) {
-          await databases.deleteDocument(
+          await database.deleteDocument(
             collectionId: collectionId,
             documentId: documentId,
             databaseId: databaseId,

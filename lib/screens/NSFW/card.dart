@@ -106,7 +106,7 @@ class _ImageCaedState extends State<CardPage> {
       var promise = await account.get();
       var email = promise.email;
       var name = promise.name;
-      var listData = await databases.listDocuments(
+      var listData = await database.listDocuments(
         collectionId: '6490339aacca8d3aecf2',
         databaseId: '649033920793f53a7112',
         queries: [
@@ -165,7 +165,7 @@ class _ImageCaedState extends State<CardPage> {
     try {
       final now = DateTime.now();
       final formattedDate = now.toIso8601String();
-      final document = await databases.createDocument(
+      final document = await database.createDocument(
         collectionId: collectionId,
         data: {
           'url': item,
@@ -192,7 +192,7 @@ class _ImageCaedState extends State<CardPage> {
     String documentId = '';
 
     try {
-      var listData = await databases.listDocuments(
+      var listData = await database.listDocuments(
         collectionId: collectionId,
         databaseId: databaseId,
       );
@@ -206,7 +206,7 @@ class _ImageCaedState extends State<CardPage> {
         }
       }
 
-      await databases.deleteDocument(
+      await database.deleteDocument(
         collectionId: collectionId,
         documentId: documentId,
         databaseId: databaseId,
@@ -261,17 +261,6 @@ class _ImageCaedState extends State<CardPage> {
         : imageUrl;
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ImageDetailsScreen(
-              imageUrl: imagechanger,
-              isNSFW: true,
-            ),
-          ),
-        );
-      },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Stack(
@@ -306,10 +295,10 @@ class _ImageCaedState extends State<CardPage> {
       final eventType = event.events;
       final payload = event.payload;
 
-      if (eventType.contains('databases.*.collections.*.documents.*.create')) {
+      if (eventType.contains('database.*.collections.*.documents.*.create')) {
         handleDocumentCreation(payload);
       } else if (eventType
-          .contains('databases.*.collections.*.documents.*.delete')) {
+          .contains('database.*.collections.*.documents.*.delete')) {
         handleDocumentUpdate(payload);
       }
     });

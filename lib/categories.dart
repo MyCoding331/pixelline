@@ -157,6 +157,11 @@ class _MyCategoriesState extends State<Categories> {
     return Scaffold(
         body: CustomScrollView(
       slivers: [
+        const SliverToBoxAdapter(
+          child: SizedBox(
+            height: 70,
+          ),
+        ),
         SliverGrid(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,

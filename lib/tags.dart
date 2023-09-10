@@ -70,7 +70,7 @@ class _TagFetchingScreenState extends State<TagFetchingScreen> {
 
     return Column(
       children: [
-        const SizedBox(height: 30),
+        const SizedBox(height: 70),
         Wrap(
           spacing: 12.0,
           runSpacing: 12.0,

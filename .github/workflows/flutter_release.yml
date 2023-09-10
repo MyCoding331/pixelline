@@ -1,0 +1,47 @@
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+      - develop
+
+name: "Build & Release"
+
+jobs:
+  build:
+    name: Build & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set tag as environment variable
+        run: echo "TAG=$GITHUB_REF" >> $GITHUB_ENV
+
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "::set-output name=version::$(echo $TAG | sed -n 's/refs\/tags\/v//p')"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: "3.13.2" # Specify your desired Flutter version
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release --split-per-abi
+
+      - name: Push to Releases
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/release/*"
+          prerelease: false
+          tag: "v1.0.1" # Use the extracted version
+          token: ${{ secrets.TOKEN }}

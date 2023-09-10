@@ -70,7 +70,7 @@ class _AuthPageState extends State<AuthPage> {
         print("User created with ID: ${user.$id}");
       }
 
-      await databases.createDocument(
+      await database.createDocument(
         databaseId: databaseId,
         collectionId: collectionId,
         documentId: uniqueId,

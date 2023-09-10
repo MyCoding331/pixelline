@@ -3,8 +3,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:pixelline/api_service.dart';
 import 'package:pixelline/categories.dart';
+import 'package:pixelline/components/ads_units.dart';
 import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/tab_bar.dart';
 import 'package:pixelline/search_page.dart';
@@ -12,6 +14,7 @@ import 'package:pixelline/fav_screen.dart';
 import 'package:pixelline/container_screen.dart';
 import 'package:pixelline/model/setting_page.dart';
 import 'package:pixelline/model/Auth/auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WallpaperScreen extends StatefulWidget {
   const WallpaperScreen({Key? key}) : super(key: key);
@@ -33,16 +36,65 @@ class _WallpaperScreenState extends State<WallpaperScreen>
 
   late final AnimationController _controller =
       AnimationController(vsync: this, duration: const Duration(seconds: 1));
-
+  BannerAd? _bannerAd;
+  BannerAd? _newBannerAd;
   @override
   void initState() {
     super.initState();
+    setUserDetails();
     _scrollController.addListener(() {
       _controller;
       // loadFavorites();
     });
-
+    initializeingBanner();
     checkUserSession();
+  }
+
+  void initializeingBanner() {
+    BannerAd(
+      adUnitId: adsBanner,
+      request: const AdRequest(),
+      size: AdSize.fullBanner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          if (kDebugMode) {
+            print('Failed to load a banner ad: ${err.message}');
+          }
+          ad.dispose();
+        },
+      ),
+    ).load();
+    BannerAd(
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      request: const AdRequest(),
+      size: AdSize.fullBanner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _newBannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          if (kDebugMode) {
+            print('Failed to load a banner ad: ${err.message}');
+          }
+          ad.dispose();
+        },
+      ),
+    ).load();
+  }
+
+  Future<void> setUserDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    final promise = await account.get();
+    await prefs.setString('userEmail', promise.email);
+    await prefs.setString('userName', promise.name);
+    print('userDetails has been set sucessfully');
   }
 
   final pages = <Widget>[];
@@ -51,7 +103,8 @@ class _WallpaperScreenState extends State<WallpaperScreen>
   @override
   void dispose() {
     _controller.dispose();
-
+    _bannerAd?.dispose();
+    _newBannerAd?.dispose();
     super.dispose();
   }
 
@@ -95,7 +148,6 @@ class _WallpaperScreenState extends State<WallpaperScreen>
       const FavScreen(),
       const Categories(),
       const SearchPage(),
-      // const StorageScreen(),
     ]);
     final screenSize = MediaQuery.of(context).size;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -415,6 +467,17 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                         ),
                       ],
                     ),
+                  ),
+                ),
+              if (_bannerAd != null &&
+                  _getAppBarTitle(pageIndex) != "Search" &&
+                  _getAppBarTitle(pageIndex) != "Favorites")
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 60,
+                    child: AdWidget(ad: _bannerAd!),
                   ),
                 ),
             ],

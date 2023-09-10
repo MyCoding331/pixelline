@@ -1,12 +1,14 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:pixelline/api_service.dart';
 import 'package:pixelline/model/wallpaper.dart';
+import 'package:pixelline/util/util.dart';
 
 import 'card_screen.dart';
 

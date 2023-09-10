@@ -4,10 +4,14 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:like_button/like_button.dart';
+import 'package:pixelline/components/ads_units.dart';
 
 import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/wallpaper.dart';
+import 'package:pixelline/util/util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api_service.dart';
 import '../detail_screen.dart';
 
@@ -21,7 +25,7 @@ class CardScreen extends StatefulWidget {
 }
 
 class _CardScreenState extends State<CardScreen> {
-  List<DocumentData> documents = [];
+  List<Wallpaper> documents = [];
   // List<String> favorites = [];
   final String collectionId =
       '6490339aacca8d3aecf2'; // Replace with your actual collection ID
@@ -30,12 +34,51 @@ class _CardScreenState extends State<CardScreen> {
   late String documentId;
   bool isAdded = true;
   late RealtimeSubscription subscribtion;
-
+  late final WallpaperStorage<Wallpaper> wallpaperStorage;
+  NativeAd? nativeAd;
   @override
   void initState() {
     super.initState();
     subscribe();
-    loadFavorites();
+    initializeingNative();
+    initializing().then(
+      (_) => loadFavorites(),
+    );
+  }
+
+  void initializeingNative() {
+    nativeAd = NativeAd(
+      adUnitId: adsNative,
+      request: const AdRequest(),
+      nativeTemplateStyle:
+          NativeTemplateStyle(templateType: TemplateType.medium),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            nativeAd = ad as NativeAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          if (kDebugMode) {
+            print('Failed to load a banner ad: ${err.message}');
+          }
+          ad.dispose();
+        },
+      ),
+    );
+    nativeAd!.load();
+  }
+
+  Future<void> initializing() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newData = WallpaperStorage<Wallpaper>(
+        storageKey: 'favorites',
+        fromJson: (json) => Wallpaper.fromJson(json),
+        toJson: (videos) => videos.toJson(),
+        prefs: prefs);
+    setState(() {
+      wallpaperStorage = newData;
+    });
   }
 
   int _getCrossAxisCount(BuildContext context) {
@@ -57,6 +100,7 @@ class _CardScreenState extends State<CardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return Column(
       children: [
         Expanded(
@@ -64,8 +108,8 @@ class _CardScreenState extends State<CardScreen> {
             slivers: [
               const SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 30,
-                ), // Add some whitespace at the end
+                  height: 70,
+                ),
               ),
               SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -74,101 +118,89 @@ class _CardScreenState extends State<CardScreen> {
                   crossAxisSpacing: 6,
                   mainAxisExtent: 300,
                 ),
-                // itemCount: widget.content.length + 1,
-
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final Wallpaper wallpaper = widget.content[index];
-                    final newImage = wallpaper.url;
-                    if (index == widget.content.length) {
-                      return Container(
-                        color: Colors.transparent,
-                        child: const CupertinoActivityIndicator(radius: 20),
+                    if (screenWidth <= 600
+                        ? index % 12 == 0
+                        : index % 18 == 0 && index != 0) {
+                      // Show the ad after every 10 cards (adjust as needed)
+                      return AdContainer(
+                        ad: nativeAd!,
                       );
-                    }
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ImageDetailsScreen(
-                              imageUrl: wallpaper.url,
-                              imageId: wallpaper.id,
+                    } else {
+                      // Show a regular card
+                      final Wallpaper wallpaper =
+                          widget.content[index - (index ~/ 10)];
+                      final newImage = wallpaper.url;
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ImageDetailsScreen(
+                                imageUrl: wallpaper.url,
+                                imageId: wallpaper.id,
+                                wallpaper: wallpaper,
+                              ),
                             ),
-                          ),
-                        ).then((_) {
-                          loadFavorites();
-                        });
-                      },
-                      // onLongPress: () {
-                      //   toggleFavorite(context, wallpaper.url, index);
-                      // },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12.0),
-                        child: Stack(
-                          children: [
-                            ImageComponent(imagePath: newImage),
-                            // if (checkIfInFavorites(newImage))
-                            //   Container(
-                            //     width: double.infinity,
-                            //     height: double.infinity,
-                            //     color: Colors.black54,
-                            //     padding: const EdgeInsets.all(16.0),
-                            //     child: const Text(
-                            //       "Library",
-                            //       style: TextStyle(
-                            //         color: Colors.white,
-                            //         fontSize: 16.0,
-                            //         wordSpacing: 30.0,
-                            //         fontWeight: FontWeight.bold,
-                            //       ),
-                            //     ),
-                            //   )
-                            // else
-                            //   const SizedBox(),
-                            Positioned(
-                              bottom: 10,
-                              right: 10,
-                              child: Center(
-                                child: LikeButton(
-                                  onTap: (isLiked) => onLikeButtonTap(
-                                      isLiked, context, wallpaper.url, index),
-                                  size: 42,
-                                  likeBuilder: (bool isLiked) {
-                                    bool isInFavorites =
-                                        checkIfInFavorites(wallpaper.url);
-                                    return ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(20000),
-                                      child: Container(
-                                        width: 30,
-                                        height: 30,
-                                        color: Colors.black26,
-                                        child: Icon(
-                                          Icons.favorite,
-                                          color: isInFavorites
-                                              ? Colors.red
-                                              : Colors.white,
-                                          size: 22,
+                          ).then((_) {
+                            loadFavorites();
+                          });
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12.0),
+                          child: Stack(
+                            children: [
+                              ImageComponent(
+                                  imagePath:
+                                      newImage), // Change to your image source
+
+                              Positioned(
+                                bottom: 10,
+                                right: 10,
+                                child: Center(
+                                  child: LikeButton(
+                                    onTap: (isLiked) => onLikeButtonTap(
+                                        isLiked, context, wallpaper, index),
+                                    size: 42,
+                                    likeBuilder: (bool isLiked) {
+                                      bool isInFavorites =
+                                          checkIfInFavorites(wallpaper.id);
+                                      return ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(20000),
+                                        child: Container(
+                                          width: 30,
+                                          height: 30,
+                                          color: Colors.black26,
+                                          child: Icon(
+                                            Icons.favorite,
+                                            color: isInFavorites
+                                                ? Colors.red
+                                                : Colors.white,
+                                            size: 22,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            )
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
-                  childCount: widget.content.length,
+                  childCount:
+                      widget.content.length + (widget.content.length ~/ 10),
                 ),
               ),
               const SliverToBoxAdapter(
                 child: SizedBox(
                   height: 30,
-                ), // Add some whitespace at the end
+                ),
               ),
             ],
           ),
@@ -177,117 +209,39 @@ class _CardScreenState extends State<CardScreen> {
     );
   }
 
-  Future<void> loadFavorites() async {
-    try {
-      var promise = await account.get();
-      var email = promise.email;
-      var name = promise.name;
-      var listData = await databases.listDocuments(
-        collectionId: '6490339aacca8d3aecf2',
-        databaseId: '649033920793f53a7112',
-        queries: [
-          Query.equal('userEmail', email),
-          Query.equal('userName', name),
-          Query.limit(90),
-        ],
-      );
-
-      setState(() {
-        documents = listData.documents.map((document) {
-          var data = document.data;
-          documentId = document.$id;
-          return DocumentData(
-            email: data['userEmail'],
-            name: data['userName'],
-            imageUrl: data['url'],
-            date: data['date'],
-            isNSFW: data['isNSFW'],
-          );
-        }).toList();
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching favorites: $e');
-      }
-    }
-  }
-
-  bool checkIfInFavorites(image) {
+  bool checkIfInFavorites(id) {
     for (var document in documents) {
-      if (document.imageUrl == image) {
+      if (document.id == id) {
         return true;
       }
     }
     return false;
   }
 
-  Future<void> addToFavorites(String item) async {
-    var promise = await account.get();
-    try {
-      final now = DateTime.now();
-      final formattedDate =
-          now.toIso8601String(); // Format the date as an ISO 8601 string
-      final document = await databases.createDocument(
-        collectionId: collectionId,
-        data: {
-          'url': item,
-          'userEmail': promise.email,
-          'userName': promise.name,
-          'date': formattedDate,
-          'isNSFW': item.contains("slxftlarogkbsdtwepdn.supabase.co"),
-        },
-        databaseId: databaseId,
-        documentId: uniqueId,
-      );
-      if (kDebugMode) {
-        print('Document added with ID: ${document.$databaseId}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error adding document: $e');
-      }
-    }
+  Future<void> loadFavorites() async {
+    final jsonStringList = await wallpaperStorage.getDataList();
+    await wallpaperStorage.restoreData();
+    setState(() {
+      documents = jsonStringList;
+    });
   }
 
-  Future<void> removeFromFavorites(String item) async {
-    var promise = await account.get();
-    String documentId = '';
-
-    try {
-      var listData = await databases.listDocuments(
-          collectionId: collectionId,
-          databaseId: databaseId,
-          queries: [
-            Query.equal('userName', promise.name),
-            Query.equal('userEmail', promise.email),
-            Query.limit(90),
-          ]);
-
-      for (var document in listData.documents) {
-        var data = document.data;
-        if (data['url'] == item &&
-            data['userEmail'] == promise.email &&
-            data['userName'] == promise.name) {
-          documentId = document.$id;
-        }
-      }
-
-      await databases.deleteDocument(
-        collectionId: collectionId,
-        documentId: documentId,
-        databaseId: databaseId,
-      );
-      if (kDebugMode) {
-        print('Document removed with ID: $documentId');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error removing document: $e');
-      }
-    }
+  Future<void> addToFavorites(Wallpaper item) async {
+    Wallpaper videos = item;
+    documents.add(item);
+    // print(item.url);
+    await wallpaperStorage.storeData(videos, context).then(
+          (_) => loadFavorites(),
+        );
   }
 
-  void showRemoveDialog(BuildContext context, String image, int index) {
+  Future<void> removeFromFavorites(id) async {
+    await wallpaperStorage.removeData(id, context).then(
+          (_) => loadFavorites(),
+        );
+  }
+
+  void showRemoveDialog(BuildContext context, String imageId, int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -330,7 +284,7 @@ class _CardScreenState extends State<CardScreen> {
             ),
             ElevatedButton.icon(
               onPressed: () {
-                removeFromFavorites(image).then((_) => loadFavorites());
+                removeFromFavorites(imageId).then((_) => loadFavorites());
                 Navigator.of(context).pop(true);
               },
               icon: const Icon(Icons.delete_outline_rounded, size: 20),
@@ -361,17 +315,18 @@ class _CardScreenState extends State<CardScreen> {
     return true; // Return true to indicate that the like state has been changed
   }
 
-  Future<bool?> onLikeButtonTap(bool isLiked, context, image, index) async {
+  Future<bool?> onLikeButtonTap(
+      bool isLiked, context, Wallpaper wallpaper, index) async {
     // Check if the image is in favorites
-    bool isInFavorites = checkIfInFavorites(image);
+    bool isInFavorites = checkIfInFavorites(wallpaper.id);
 
     if (isInFavorites) {
       // If it's in favorites, show the remove dialog and return false
-      showRemoveDialog(context, image, index);
+      showRemoveDialog(context, wallpaper.id, index);
       return false;
     } else {
       // If it's not in favorites, add it and return true
-      await addToFavorites(image);
+      await addToFavorites(wallpaper);
       loadFavorites();
       return true;
     }
@@ -383,10 +338,10 @@ class _CardScreenState extends State<CardScreen> {
       final eventType = event.events;
       final payload = event.payload;
 
-      if (eventType.contains('databases.*.collections.*.documents.*.create')) {
+      if (eventType.contains('database.*.collections.*.documents.*.create')) {
         handleDocumentCreation(payload);
       } else if (eventType
-          .contains('databases.*.collections.*.documents.*.delete')) {
+          .contains('database.*.collections.*.documents.*.delete')) {
         handleDocumentUpdate(payload);
       }
     });
@@ -419,6 +374,28 @@ class _CardScreenState extends State<CardScreen> {
   @override
   void dispose() {
     super.dispose();
+
     subscribtion.close();
+  }
+}
+
+class AdContainer extends StatefulWidget {
+  final NativeAd ad;
+
+  const AdContainer({Key? key, required this.ad}) : super(key: key);
+
+  @override
+  _AdContainerState createState() => _AdContainerState();
+}
+
+class _AdContainerState extends State<AdContainer> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+      child: AdWidget(
+        ad: widget.ad,
+      ),
+    );
   }
 }

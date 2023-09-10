@@ -8,23 +8,30 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:like_button/like_button.dart';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:pixelline/components/ads_units.dart';
 import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/pages.dart';
 import 'package:pixelline/tags.dart';
+import 'package:pixelline/util/util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'model/wallpaper.dart';
 
 class ImageDetailsScreen extends StatefulWidget {
   final String imageUrl;
   final String imageId;
+  Wallpaper wallpaper;
   final bool isNSFW;
 
-  const ImageDetailsScreen({
+  ImageDetailsScreen({
     Key? key,
     required this.imageUrl,
+    required this.wallpaper,
     this.isNSFW = false,
     this.imageId = '',
   }) : super(key: key);
@@ -41,20 +48,91 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
   bool isWallpaperSet = false;
   bool isDownloaded = false;
   static const double iconSize = 30;
-  List<DocumentData> documents = [];
-
+  List<Wallpaper> documents = [];
+  late final WallpaperStorage<Wallpaper> wallpaperStorage;
   final String collectionId =
       '6490339aacca8d3aecf2'; // Replace with your actual collection ID
   final String databaseId =
       '649033920793f53a7112'; // Replace with your actual database ID
   int _selectedIndex = 0;
-
+  InterstitialAd? _interstitialAd;
+  RewardedAd? _rewardedAd;
   @override
   void initState() {
     super.initState();
-    loadFavorites();
+    _loadInterstitialAd();
+    initializing().then((_) => loadFavorites());
     isFavorite = false;
     checkIfInFavorites(widget.imageUrl);
+  }
+
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: adsInterstitial,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              // _moveToHome();
+              // Navigator.pop(context, true);
+              downloadImage(
+                widget.imageUrl
+                    .replaceAll("wallpapers/thumb", "download")
+                    .replaceAll(".jpg", "-1080x1920.jpg"),
+              );
+            },
+          );
+
+          setState(() {
+            _interstitialAd = ad;
+          });
+        },
+        onAdFailedToLoad: (err) {
+          if (kDebugMode) {
+            print('Failed to load an interstitial ad: ${err.message}');
+          }
+        },
+      ),
+    );
+    RewardedAd.load(
+      adUnitId: adsRewarded,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              setState(() {
+                ad.dispose();
+                _rewardedAd = null;
+              });
+              _loadInterstitialAd();
+            },
+          );
+
+          setState(() {
+            _rewardedAd = ad;
+          });
+        },
+        onAdFailedToLoad: (err) {
+          if (kDebugMode) {
+            print('Failed to load a rewarded ad: ${err.message}');
+          }
+        },
+      ),
+    );
+  }
+
+  Future<void> initializing() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newData = WallpaperStorage<Wallpaper>(
+        storageKey: 'favorites',
+        fromJson: (json) => Wallpaper.fromJson(json),
+        toJson: (videos) => videos.toJson(),
+        prefs: prefs);
+    setState(() {
+      wallpaperStorage = newData;
+    });
   }
 
   String generateRandomString(int length) {
@@ -68,145 +146,6 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
     }
 
     return result;
-  }
-
-  void loadFavorites() async {
-    try {
-      var promise = await account.get();
-      var email = promise.email;
-      var name = promise.name;
-
-      var listData = await databases.listDocuments(
-        collectionId: '6490339aacca8d3aecf2',
-        databaseId: '649033920793f53a7112',
-        queries: [
-          Query.equal('userEmail', email),
-          Query.equal('userName', name),
-          Query.limit(90),
-        ],
-      );
-
-      setState(() {
-        documents = listData.documents
-            .asMap()
-            .map((index, document) {
-              var data = document.data;
-
-              return MapEntry(
-                index,
-                DocumentData(
-                  email: data['userEmail'],
-                  name: data['userName'],
-                  imageUrl: data['url'],
-                  date: data['date'],
-                  isNSFW: data['isNSFW'],
-                ),
-              );
-            })
-            .values
-            .toList();
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching favorites: $e');
-      }
-    }
-  }
-
-  Future<void> addToFavorites(String item) async {
-    var promise = await account.get();
-    try {
-      final now = DateTime.now();
-      final formattedDate = now.toIso8601String();
-      final document = await databases.createDocument(
-        collectionId: collectionId,
-        data: {
-          'url': item,
-          'userEmail': promise.email,
-          'userName': promise.name,
-          'date': formattedDate,
-          'isNSFW': item.contains('slxftlarogkbsdtwepdn.supabase.co'),
-        },
-        databaseId: databaseId,
-        documentId: uniqueId,
-      );
-      setState(() {
-        isFavorite = true;
-        documents.add(
-          DocumentData(
-            email: promise.email,
-            name: promise.name,
-            imageUrl: item,
-            date: formattedDate,
-            isNSFW: item.contains('slxftlarogkbsdtwepdn.supabase.co')
-                ? true
-                : false,
-          ),
-        );
-      });
-
-      if (kDebugMode) {
-        print('Document added with ID: ${document.$databaseId}');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error adding document: $e');
-      }
-    }
-  }
-
-  Future<void> removeFromFavorites(String item) async {
-    // print(item);
-    var promise = await account.get();
-    String? documentId;
-
-    try {
-      var listData = await databases.listDocuments(
-          collectionId: collectionId,
-          databaseId: databaseId,
-          queries: [
-            Query.equal('userEmail', promise.email),
-            Query.equal('userName', promise.name),
-            Query.limit(90),
-          ]);
-
-      for (var document in listData.documents) {
-        var data = document.data;
-        // print('Document URL: ${data['url']}');
-        // print('Item URL: $item');
-        // print('Document User Email: ${data['userEmail']}');
-        // print('User Email: ${promise.email}');
-
-        if (data['url'] == item &&
-            data['userEmail'] == promise.email &&
-            data['userName'] == promise.name) {
-          documentId = document.$id;
-          break; // Exit the loop once the matching document is found
-        }
-      }
-
-      if (documentId != null) {
-        await databases.deleteDocument(
-          collectionId: collectionId,
-          documentId: documentId,
-          databaseId: databaseId,
-        );
-        if (kDebugMode) {
-          print('Document removed with ID: $documentId');
-        }
-        setState(() {
-          isFavorite = false;
-        });
-      } else {
-        if (kDebugMode) {
-          print('Document not found in favorites');
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error removing document: $e');
-      }
-    }
   }
 
   Future<void> downloadImage(String imageUrl) async {
@@ -376,44 +315,39 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
     // }
   }
 
-  bool checkIfInFavorites(image) {
-    // Iterate through the list of documents and check if the image is present in any of them
+  bool checkIfInFavorites(id) {
     for (var document in documents) {
-      if (document.imageUrl.contains(image)) {
-        setState(() {
-          isFavorite = true;
-        });
+      if (document.id == id) {
         return true;
-        // Image is in favorites
       }
     }
-
-    setState(() {
-      isFavorite = false;
-    });
     return false;
   }
 
-  Future<void> toggleFavorite(image) async {
-    if (checkIfInFavorites(image)) {
-      showRemoveDialog(context, image);
-      // if (kDebugMode) {
-      //   print("Removed from favorites");
-      // }
-
-      // Image is in favorites
-    } else {
-      addToFavorites(image).then((_) => {loadFavorites()});
-      // if (kDebugMode) {
-      //   print("Added to favorites");
-      // }
-    }
-    // if (kDebugMode) {
-    //   print(isFavorite);
-    // }
+  Future<void> loadFavorites() async {
+    final jsonStringList = await wallpaperStorage.getDataList();
+    await wallpaperStorage.restoreData();
+    setState(() {
+      documents = jsonStringList;
+    });
   }
 
-  void showRemoveDialog(BuildContext context, String image) {
+  Future<void> addToFavorites(Wallpaper item) async {
+    Wallpaper videos = item;
+    documents.add(item);
+    // print(item.url);
+    await wallpaperStorage.storeData(videos, context).then(
+          (_) => loadFavorites(),
+        );
+  }
+
+  Future<void> removeFromFavorites(id) async {
+    await wallpaperStorage.removeData(id, context).then(
+          (_) => loadFavorites(),
+        );
+  }
+
+  void showRemoveDialog(BuildContext context, String imageId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -456,17 +390,17 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
             ),
             ElevatedButton.icon(
               onPressed: () {
-                removeFromFavorites(image).then((_) => loadFavorites());
+                removeFromFavorites(imageId).then((_) => loadFavorites());
                 Navigator.of(context).pop(true);
               },
               icon: const Icon(Icons.delete_outline_rounded, size: 20),
               label: const Text("Remove", style: TextStyle(fontSize: 16.0)),
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
+                backgroundColor: Colors.red,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
@@ -475,6 +409,33 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
         );
       },
     );
+  }
+
+  Future<bool?> toggleFavorite(context, image, index) async {
+    if (checkIfInFavorites(image)) {
+      showRemoveDialog(context, image);
+    } else {
+      await addToFavorites(image);
+      loadFavorites();
+    }
+    return true; // Return true to indicate that the like state has been changed
+  }
+
+  Future<bool?> onLikeButtonTap(
+      bool isLiked, context, Wallpaper wallpaper) async {
+    // Check if the image is in favorites
+    bool isInFavorites = checkIfInFavorites(wallpaper.id);
+
+    if (isInFavorites) {
+      // If it's in favorites, show the remove dialog and return false
+      showRemoveDialog(context, wallpaper.id);
+      return false;
+    } else {
+      // If it's not in favorites, add it and return true
+      await addToFavorites(wallpaper);
+      loadFavorites();
+      return true;
+    }
   }
 
   Future<void> _showConfirmationDialog(
@@ -682,7 +643,6 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final image = widget.imageUrl;
     // print(widget.imageId);
     final modifiedImage = widget.imageUrl
         .replaceAll("wallpapers/thumb", "download")
@@ -704,10 +664,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                   sigmaY:
                       50), // Adjust the sigmaX and sigmaY for blur intensity
               child: CachedNetworkImage(
-                imageUrl:
-                    widget.imageUrl.contains('slxftlarogkbsdtwepdn.supabase.co')
-                        ? widget.imageUrl
-                        : modifiedImage,
+                imageUrl: modifiedImage,
                 fit: BoxFit.cover,
                 height: double.infinity,
                 width: double.infinity,
@@ -737,10 +694,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(6),
                             child: CachedNetworkImage(
-                              imageUrl: widget.imageUrl.contains(
-                                      'slxftlarogkbsdtwepdn.supabase.co/storage/v1/object/public/images/Jpg/part-1/')
-                                  ? widget.imageUrl
-                                  : modifiedImage,
+                              imageUrl: modifiedImage,
                               fit: BoxFit.cover,
                               width: double.infinity,
                               placeholder: (context, url) => const Center(
@@ -786,12 +740,18 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () {
-                                if (!isLoading) {
+                                if (!isLoading && _rewardedAd != null) {
+                                  _rewardedAd?.show(
+                                    onUserEarnedReward: (_, reward) {
+                                      _showConfirmationDialog(
+                                        modifiedImage,
+                                        context,
+                                      );
+                                    },
+                                  );
+                                } else {
                                   _showConfirmationDialog(
-                                    widget.imageUrl.contains(
-                                            'slxftlarogkbsdtwepdn.supabase.co/storage/v1/object/public/images/Jpg/part-1/')
-                                        ? widget.imageUrl
-                                        : modifiedImage,
+                                    modifiedImage,
                                     context,
                                   );
                                 }
@@ -807,12 +767,13 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () {
-                                downloadImage(
-                                  widget.imageUrl.contains(
-                                          'slxftlarogkbsdtwepdn.supabase.co/storage/v1/object/public/images/Jpg/part-1/')
-                                      ? widget.imageUrl
-                                      : modifiedImage,
-                                );
+                                if (_interstitialAd != null) {
+                                  _interstitialAd?.show();
+                                } else {
+                                  downloadImage(
+                                    modifiedImage,
+                                  );
+                                }
                               },
                               borderRadius: BorderRadius.circular(1200),
                               child: Container(
@@ -822,27 +783,28 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                               ),
                             ),
                           ),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                toggleFavorite(image)
-                                    .then((_) => loadFavorites());
-                              },
-                              borderRadius: BorderRadius.circular(1200),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                child: Icon(
-                                  checkIfInFavorites(image)
-                                      ? Icons.favorite
-                                      : Icons.favorite_outline,
-                                  size: 24,
-                                  color: checkIfInFavorites(image)
-                                      ? Colors.red
-                                      : Colors.white,
+                          LikeButton(
+                            onTap: (isLiked) => onLikeButtonTap(
+                                isLiked, context, widget.wallpaper),
+                            size: 42,
+                            likeBuilder: (bool isLiked) {
+                              bool isInFavorites =
+                                  checkIfInFavorites(widget.wallpaper.id);
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(20000),
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  child: Icon(
+                                    Icons.favorite,
+                                    color: isInFavorites
+                                        ? Colors.red
+                                        : Colors.white,
+                                    size: 22,
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                           if (widget.isNSFW == false)
                             Material(

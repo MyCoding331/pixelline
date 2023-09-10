@@ -1,8 +1,12 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:pixelline/model/wallpaper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter/foundation.dart';
 
 class APIService {
   String params;
@@ -57,78 +61,63 @@ class ImageComponent extends StatelessWidget {
     final uniqueTag = UniqueKey().toString();
     return Hero(
         tag: uniqueTag,
-        // createRectTween: (begin, end) {
-        //   return CustomRectTween(
-        //       begin: begin, end: end); // Use a custom RectTween
-        // },
-        child: CachedNetworkImage(
-          imageUrl: imagePath.contains('slxftlarogkbsdtwepdn.supabase.co')
-              ? imagePath
-              : newImage,
-          fit: BoxFit.cover,
+        child: Container(
           height: 320.0,
-          width: double.infinity,
-          // color: Colors.black38,
-          placeholderFadeInDuration: const Duration(milliseconds: 700),
-          useOldImageOnUrlChange: true,
-          placeholder: (context, url) => Center(
-            child: CachedNetworkImage(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aHVtYW58ZW58MHx8MHx8fDA%3D&w=1000&q=80',
-              fit: BoxFit.cover,
-              height: 320.0,
-              width: double.infinity,
-              useOldImageOnUrlChange: true,
-              placeholderFadeInDuration: const Duration(milliseconds: 700),
-              color: Colors.black38,
-              progressIndicatorBuilder: (context, url, downloadProgress) =>
-                  Center(
-                child: SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: CircularProgressIndicator(
-                    value: downloadProgress.progress,
-                    strokeWidth: 2.5,
+          child: CachedNetworkImage(
+            imageUrl: newImage,
+            fit: BoxFit.cover,
+            height: double.infinity,
+            width: double.infinity,
+            // color: Colors.black38,
+            placeholderFadeInDuration: const Duration(milliseconds: 700),
+            useOldImageOnUrlChange: true,
+            placeholder: (context, url) => Center(
+              child: CachedNetworkImage(
+                imageUrl:
+                    'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aHVtYW58ZW58MHx8MHx8fDA%3D&w=1000&q=80',
+                fit: BoxFit.cover,
+                height: 320.0,
+                width: double.infinity,
+                useOldImageOnUrlChange: true,
+                placeholderFadeInDuration: const Duration(milliseconds: 700),
+                color: Colors.black38,
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    Center(
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      value: downloadProgress.progress,
+                      strokeWidth: 2.5,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          errorWidget: (context, url, error) => Center(
-            child: CachedNetworkImage(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aHVtYW58ZW58MHx8MHx8fDA%3D&w=1000&q=80',
-              fit: BoxFit.cover,
-              height: 320.0,
-              width: double.infinity,
-              useOldImageOnUrlChange: true,
-              placeholderFadeInDuration: const Duration(milliseconds: 700),
-              color: Colors.black38,
-              progressIndicatorBuilder: (context, url, downloadProgress) =>
-                  Center(
-                child: SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: CircularProgressIndicator(
-                    value: downloadProgress.progress,
-                    strokeWidth: 2.5,
+            errorWidget: (context, url, error) => Center(
+              child: CachedNetworkImage(
+                imageUrl:
+                    'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aHVtYW58ZW58MHx8MHx8fDA%3D&w=1000&q=80',
+                fit: BoxFit.cover,
+                height: 320.0,
+                width: double.infinity,
+                useOldImageOnUrlChange: true,
+                placeholderFadeInDuration: const Duration(milliseconds: 700),
+                color: Colors.black38,
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    Center(
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      value: downloadProgress.progress,
+                      strokeWidth: 2.5,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ));
-  }
-}
-
-class CustomRectTween extends RectTween {
-  CustomRectTween({required Rect? begin, required Rect? end})
-      : super(begin: begin, end: end);
-
-  @override
-  Rect lerp(double t) {
-    const double durationFactor = 120.0;
-    final double curvedT = Curves.fastOutSlowIn.transform(t);
-    return Rect.lerp(begin!, end!, curvedT * durationFactor)!;
   }
 }
