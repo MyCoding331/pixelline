@@ -5,8 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:pixelline/model/wallpaper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter/foundation.dart';
 
 class APIService {
   String params;
@@ -21,8 +19,7 @@ class APIService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as List<dynamic>;
-      final List<Wallpaper> wallpapers =
-          data.map((item) => Wallpaper.fromJson(item)).toList();
+      final List<Wallpaper> wallpapers = data.map((item) => Wallpaper.fromJson(item)).toList();
       return wallpapers;
     } else {
       throw Exception('Failed to load wallpapers');
@@ -36,8 +33,7 @@ class APIService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as List<dynamic>;
-      final List<Wallpaper> wallpapers =
-          data.map((item) => Wallpaper.fromJson(item)).toList();
+      final List<Wallpaper> wallpapers = data.map((item) => Wallpaper.fromJson(item)).toList();
       return wallpapers;
     } else {
       throw Exception('Failed to load wallpapers');
@@ -52,16 +48,14 @@ class ImageComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final newImage = imagePath
-        .replaceAll("wallpapers/thumb", "download")
-        .replaceAll(".jpg", "-1080x1920.jpg");
+    final newImage = imagePath.replaceAll("wallpapers/thumb", "download").replaceAll(".jpg", "-1080x1920.jpg");
     // final newPlaceHolderImage = imagePath
     //     .replaceAll("wallpapers/thumb", "download")
     //     .replaceAll(".jpg", "-320x240.jpg");
     final uniqueTag = UniqueKey().toString();
     return Hero(
         tag: uniqueTag,
-        child: Container(
+        child: SizedBox(
           height: 320.0,
           child: CachedNetworkImage(
             imageUrl: newImage,
@@ -81,8 +75,7 @@ class ImageComponent extends StatelessWidget {
                 useOldImageOnUrlChange: true,
                 placeholderFadeInDuration: const Duration(milliseconds: 700),
                 color: Colors.black38,
-                progressIndicatorBuilder: (context, url, downloadProgress) =>
-                    Center(
+                progressIndicatorBuilder: (context, url, downloadProgress) => Center(
                   child: SizedBox(
                     width: 30,
                     height: 30,
@@ -104,8 +97,7 @@ class ImageComponent extends StatelessWidget {
                 useOldImageOnUrlChange: true,
                 placeholderFadeInDuration: const Duration(milliseconds: 700),
                 color: Colors.black38,
-                progressIndicatorBuilder: (context, url, downloadProgress) =>
-                    Center(
+                progressIndicatorBuilder: (context, url, downloadProgress) => Center(
                   child: SizedBox(
                     width: 30,
                     height: 30,

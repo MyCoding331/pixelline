@@ -1,9 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, must_be_immutable
 
 import 'dart:math';
 import 'dart:ui';
-
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
@@ -11,11 +9,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:like_button/like_button.dart';
 import 'dart:io';
-
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:pixelline/components/ads_units.dart';
-import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/pages.dart';
 import 'package:pixelline/tags.dart';
 import 'package:pixelline/util/util.dart';
@@ -50,10 +46,8 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
   static const double iconSize = 30;
   List<Wallpaper> documents = [];
   late final WallpaperStorage<Wallpaper> wallpaperStorage;
-  final String collectionId =
-      '6490339aacca8d3aecf2'; // Replace with your actual collection ID
-  final String databaseId =
-      '649033920793f53a7112'; // Replace with your actual database ID
+  final String collectionId = '6490339aacca8d3aecf2'; // Replace with your actual collection ID
+  final String databaseId = '649033920793f53a7112'; // Replace with your actual database ID
   int _selectedIndex = 0;
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
@@ -77,9 +71,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
               // _moveToHome();
               // Navigator.pop(context, true);
               downloadImage(
-                widget.imageUrl
-                    .replaceAll("wallpapers/thumb", "download")
-                    .replaceAll(".jpg", "-1080x1920.jpg"),
+                widget.imageUrl.replaceAll("wallpapers/thumb", "download").replaceAll(".jpg", "-1080x1920.jpg"),
               );
             },
           );
@@ -126,10 +118,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
   Future<void> initializing() async {
     final prefs = await SharedPreferences.getInstance();
     final newData = WallpaperStorage<Wallpaper>(
-        storageKey: 'favorites',
-        fromJson: (json) => Wallpaper.fromJson(json),
-        toJson: (videos) => videos.toJson(),
-        prefs: prefs);
+        storageKey: 'favorites', fromJson: (json) => Wallpaper.fromJson(json), toJson: (videos) => videos.toJson(), prefs: prefs);
     setState(() {
       wallpaperStorage = newData;
     });
@@ -137,8 +126,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
 
   String generateRandomString(int length) {
     final random = Random();
-    const chars =
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
     String result = '';
     for (int i = 0; i < length; i++) {
@@ -197,8 +185,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
             behavior: SnackBarBehavior.floating,
             content: Text(
               'Downloaded successfully',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         );
@@ -215,8 +202,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
     }
   }
 
-  Future<void> setWallpaper(
-      String imageUrl, int type, BuildContext context) async {
+  Future<void> setWallpaper(String imageUrl, int type, BuildContext context) async {
     setState(() {
       isLoading = true;
     });
@@ -242,8 +228,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
         behavior: SnackBarBehavior.floating,
         content: Text(
           'Setting Wallpaper in ${wallpaperLabels[wallpaperType]}',
-          style:
-              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -261,8 +246,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
 
     try {
       final file = await downloadImageInSet(imageUrl);
-      final result = await WallpaperManager.setWallpaperFromFile(
-          file.path, wallpaperTypes[wallpaperType]);
+      final result = await WallpaperManager.setWallpaperFromFile(file.path, wallpaperTypes[wallpaperType]);
 
       if (result) {
         setState(() {
@@ -277,8 +261,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
             behavior: SnackBarBehavior.floating,
             content: Text(
               'Failed to set wallpaper',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         );
@@ -290,8 +273,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
           behavior: SnackBarBehavior.floating,
           content: Text(
             'Wallpaper Set at ${wallpaperLabels[wallpaperType]}',
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       );
@@ -303,8 +285,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
           behavior: SnackBarBehavior.floating,
           content: Text(
             error.toString(),
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       );
@@ -401,8 +382,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 backgroundColor: Colors.red,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ],
@@ -421,8 +401,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
     return true; // Return true to indicate that the like state has been changed
   }
 
-  Future<bool?> onLikeButtonTap(
-      bool isLiked, context, Wallpaper wallpaper) async {
+  Future<bool?> onLikeButtonTap(bool isLiked, context, Wallpaper wallpaper) async {
     // Check if the image is in favorites
     bool isInFavorites = checkIfInFavorites(wallpaper.id);
 
@@ -505,8 +484,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.phone_android,
-                    size: 30, color: Colors.black),
+                leading: const Icon(Icons.phone_android, size: 30, color: Colors.black),
                 title: const Text(
                   'Both Screen',
                   style: TextStyle(
@@ -548,14 +526,12 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
             children: [
               _buildTab(0, Icons.new_releases, 'Tags'),
               _buildTab(1, Icons.local_fire_department, 'Similar'),
-              // _buildTab(2, Icons.shuffle, 'Random'),
             ],
           ),
         );
       },
     ).then((value) {
       if (value != null) {
-        // Handle selected option here
         if (kDebugMode) {
           print('Selected option: $value');
         }
@@ -613,8 +589,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
       onTap: () {
         setState(() {
           _selectedIndex = index;
-          openSubMenu(
-              _selectedIndex); // Close the bottom sheet and pass the selected title
+          openSubMenu(_selectedIndex); // Close the bottom sheet and pass the selected title
         });
       },
       child: Container(
@@ -644,9 +619,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     // print(widget.imageId);
-    final modifiedImage = widget.imageUrl
-        .replaceAll("wallpapers/thumb", "download")
-        .replaceAll(".jpg", "-1080x1920.jpg");
+    final modifiedImage = widget.imageUrl.replaceAll("wallpapers/thumb", "download").replaceAll(".jpg", "-1080x1920.jpg");
     final uniqueTag = UniqueKey().toString();
 
     return WillPopScope(
@@ -659,10 +632,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
         body: Stack(
           children: [
             ImageFiltered(
-              imageFilter: ImageFilter.blur(
-                  sigmaX: 50,
-                  sigmaY:
-                      50), // Adjust the sigmaX and sigmaY for blur intensity
+              imageFilter: ImageFilter.blur(sigmaX: 50, sigmaY: 50), // Adjust the sigmaX and sigmaY for blur intensity
               child: CachedNetworkImage(
                 imageUrl: modifiedImage,
                 fit: BoxFit.cover,
@@ -681,8 +651,7 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                   // Image wrapped in Hero widget
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                       child: Hero(
                         tag: uniqueTag,
                         child: Container(
@@ -778,28 +747,23 @@ class _ImageDetailsScreenState extends State<ImageDetailsScreen> {
                               borderRadius: BorderRadius.circular(1200),
                               child: Container(
                                 padding: const EdgeInsets.all(8),
-                                child:
-                                    buildFloatingActionButtonChildForDownload(),
+                                child: buildFloatingActionButtonChildForDownload(),
                               ),
                             ),
                           ),
                           LikeButton(
-                            onTap: (isLiked) => onLikeButtonTap(
-                                isLiked, context, widget.wallpaper),
+                            onTap: (isLiked) => onLikeButtonTap(isLiked, context, widget.wallpaper),
                             size: 42,
                             likeBuilder: (bool isLiked) {
-                              bool isInFavorites =
-                                  checkIfInFavorites(widget.wallpaper.id);
+                              bool isInFavorites = checkIfInFavorites(widget.wallpaper.id);
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(20000),
-                                child: Container(
+                                child: SizedBox(
                                   width: 30,
                                   height: 30,
                                   child: Icon(
                                     Icons.favorite,
-                                    color: isInFavorites
-                                        ? Colors.red
-                                        : Colors.white,
+                                    color: isInFavorites ? Colors.red : Colors.white,
                                     size: 22,
                                   ),
                                 ),

@@ -2,7 +2,6 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:pixelline/api_service.dart';
 import 'package:pixelline/categories.dart';
@@ -11,7 +10,6 @@ import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/tab_bar.dart';
 import 'package:pixelline/search_page.dart';
 import 'package:pixelline/fav_screen.dart';
-import 'package:pixelline/container_screen.dart';
 import 'package:pixelline/model/setting_page.dart';
 import 'package:pixelline/model/Auth/auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,8 +21,7 @@ class WallpaperScreen extends StatefulWidget {
   State<WallpaperScreen> createState() => _WallpaperScreenState();
 }
 
-class _WallpaperScreenState extends State<WallpaperScreen>
-    with TickerProviderStateMixin {
+class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderStateMixin {
   final APIService apiService = APIService(params: "popular/1");
   int pageIndex = 0;
   final ScrollController _scrollController = ScrollController();
@@ -32,10 +29,7 @@ class _WallpaperScreenState extends State<WallpaperScreen>
 
   double iconSize = 25.0;
 
-  final TextEditingController _searchController = TextEditingController();
-
-  late final AnimationController _controller =
-      AnimationController(vsync: this, duration: const Duration(seconds: 1));
+  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1));
   BannerAd? _bannerAd;
   BannerAd? _newBannerAd;
   @override
@@ -94,11 +88,12 @@ class _WallpaperScreenState extends State<WallpaperScreen>
     final promise = await account.get();
     await prefs.setString('userEmail', promise.email);
     await prefs.setString('userName', promise.name);
-    print('userDetails has been set sucessfully');
+    if (kDebugMode) {
+      print('userDetails has been set sucessfully');
+    }
   }
 
   final pages = <Widget>[];
-  bool _isSearching = false;
 
   @override
   void dispose() {
@@ -106,25 +101,6 @@ class _WallpaperScreenState extends State<WallpaperScreen>
     _bannerAd?.dispose();
     _newBannerAd?.dispose();
     super.dispose();
-  }
-
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-    });
-  }
-
-  void _search() {
-    String searchTerm = _searchController.text.trim();
-
-    if (searchTerm.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ViewContainer(passedData: searchTerm),
-        ),
-      );
-    }
   }
 
   Future<bool> checkUserSession() async {
@@ -164,46 +140,14 @@ class _WallpaperScreenState extends State<WallpaperScreen>
             ? null
             : AppBar(
                 automaticallyImplyLeading: false,
-                title: _isSearching
-                    ? RawKeyboardListener(
-                        focusNode: FocusNode(),
-                        onKey: (RawKeyEvent event) {
-                          if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                            _search();
-                          }
-                        },
-                        child: TextField(
-                          autofocus: true,
-                          controller: _searchController,
-                          onSubmitted: (_) => _search(),
-                          decoration: InputDecoration(
-                            hintText: 'Enter search term',
-                            filled: false,
-                            isCollapsed: true,
-                            hintStyle: const TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18.0,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 16.0,
-                              horizontal: 16.0,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Text(
-                        _getAppBarTitle(pageIndex),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                title: Text(
+                  _getAppBarTitle(pageIndex),
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 leading: Builder(
                   builder: (BuildContext context) {
                     return PopupMenuButton<String>(
@@ -232,8 +176,7 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                       tooltip: "profile",
                       position: PopupMenuPosition.under,
                       elevation: 4,
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                         const PopupMenuItem<String>(
                           value: 'profile',
                           child: ListTile(
@@ -268,22 +211,6 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                     );
                   },
                 ),
-                actions: <Widget>[
-                  IconButton(
-                    icon: AnimatedCrossFade(
-                      firstChild: const Icon(Icons.search),
-                      secondChild: const Icon(Icons.close),
-                      crossFadeState: _isSearching
-                          ? CrossFadeState.showSecond
-                          : CrossFadeState.showFirst,
-                      duration: const Duration(milliseconds: 500),
-                    ),
-                    color: Colors.black,
-                    onPressed: () {
-                      _toggleSearch();
-                    },
-                  )
-                ],
                 shadowColor: Colors.transparent,
                 backgroundColor: Colors.white,
               ),
@@ -309,18 +236,14 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 0
-                                    ? Colors.black
-                                    : Colors.white,
+                                backgroundColor: pageIndex == 0 ? Colors.black : Colors.white,
                                 padding: const EdgeInsets.all(20),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.home,
                                 size: iconSize,
-                                color: pageIndex == 0
-                                    ? Colors.white
-                                    : Colors.black,
+                                color: pageIndex == 0 ? Colors.white : Colors.black,
                               ),
                             ),
                             const SizedBox(height: 40),
@@ -332,18 +255,14 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 1
-                                    ? Colors.black
-                                    : Colors.white,
+                                backgroundColor: pageIndex == 1 ? Colors.black : Colors.white,
                                 padding: const EdgeInsets.all(22),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.favorite_outline,
                                 size: iconSize,
-                                color: pageIndex == 1
-                                    ? Colors.white
-                                    : Colors.black,
+                                color: pageIndex == 1 ? Colors.white : Colors.black,
                               ),
                             ),
                             const SizedBox(height: 40),
@@ -355,18 +274,14 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 2
-                                    ? Colors.black
-                                    : Colors.white,
+                                backgroundColor: pageIndex == 2 ? Colors.black : Colors.white,
                                 padding: const EdgeInsets.all(22),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.category_outlined,
                                 size: iconSize,
-                                color: pageIndex == 2
-                                    ? Colors.white
-                                    : Colors.black,
+                                color: pageIndex == 2 ? Colors.white : Colors.black,
                               ),
                             ),
                             const SizedBox(height: 40),
@@ -378,18 +293,14 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 3
-                                    ? Colors.black
-                                    : Colors.white,
+                                backgroundColor: pageIndex == 3 ? Colors.black : Colors.white,
                                 padding: const EdgeInsets.all(22),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.search,
                                 size: iconSize,
-                                color: pageIndex == 3
-                                    ? Colors.white
-                                    : Colors.black,
+                                color: pageIndex == 3 ? Colors.white : Colors.black,
                               ),
                             ),
                           ],
@@ -420,8 +331,7 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                         ),
                       ],
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -469,12 +379,10 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                     ),
                   ),
                 ),
-              if (_bannerAd != null &&
-                  _getAppBarTitle(pageIndex) != "Search" &&
-                  _getAppBarTitle(pageIndex) != "Favorites")
+              if (_bannerAd != null && _getAppBarTitle(pageIndex) != "Search" && _getAppBarTitle(pageIndex) != "Favorites")
                 Align(
                   alignment: Alignment.topCenter,
-                  child: Container(
+                  child: SizedBox(
                     width: MediaQuery.of(context).size.width,
                     height: 60,
                     child: AdWidget(ad: _bannerAd!),
@@ -488,8 +396,7 @@ class _WallpaperScreenState extends State<WallpaperScreen>
   }
 }
 
-Widget buildIconButtonWithText(
-    IconData icon, bool isSelected, String label, VoidCallback onPressed) {
+Widget buildIconButtonWithText(IconData icon, bool isSelected, String label, VoidCallback onPressed) {
   return GestureDetector(
     onTap: onPressed,
     child: Row(
@@ -518,10 +425,7 @@ Widget buildIconButtonWithText(
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
                     label,
-                    style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

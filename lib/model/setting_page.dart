@@ -114,11 +114,11 @@ class _SettingScreenState extends State<SettingScreen> {
 
     await account
         .createVerification(
-      url: 'https://appwrite.io/',
+      url: 'https://cloud.appwrite.io/',
     )
         .then((response) {
       if (kDebugMode) {
-        print(response);
+        print(response.secret);
       }
       showDialog(
         context: context,
@@ -256,10 +256,8 @@ class _SettingScreenState extends State<SettingScreen> {
         print('isNSFW updated to $isNSFWEnabled successfully');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('Please restart the app for the changes to take effect.'),
-            duration: Duration(
-                seconds: 5), // Optional: Set the duration of the SnackBar
+            content: Text('Please restart the app for the changes to take effect.'),
+            duration: Duration(seconds: 5), // Optional: Set the duration of the SnackBar
           ),
         );
       }
@@ -297,10 +295,8 @@ class _SettingScreenState extends State<SettingScreen> {
         print('isLocked updated to $isLocked successfully');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('Please restart the app for the changes to take effect.'),
-            duration: Duration(
-                seconds: 5), // Optional: Set the duration of the SnackBar
+            content: Text('Please restart the app for the changes to take effect.'),
+            duration: Duration(seconds: 5), // Optional: Set the duration of the SnackBar
           ),
         );
       }
@@ -409,9 +405,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                 prefixIcon: const Icon(Icons.person),
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    isTextFieldEnabled
-                                        ? Icons.lock_open
-                                        : Icons.lock,
+                                    isTextFieldEnabled ? Icons.lock_open : Icons.lock,
                                     color: Colors.black,
                                   ),
                                   onPressed: () {},
@@ -450,9 +444,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                 prefixIcon: const Icon(Icons.phone),
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    isTextFieldEnabled
-                                        ? Icons.lock_open
-                                        : Icons.lock,
+                                    isTextFieldEnabled ? Icons.lock_open : Icons.lock,
                                     color: Colors.black,
                                   ),
                                   onPressed: () {},
@@ -494,9 +486,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                       prefixIcon: const Icon(Icons.email),
                                       suffixIcon: IconButton(
                                         icon: Icon(
-                                          isTextFieldEnabled
-                                              ? Icons.lock_open
-                                              : Icons.lock,
+                                          isTextFieldEnabled ? Icons.lock_open : Icons.lock,
                                           color: Colors.black,
                                         ),
                                         onPressed: () {},
@@ -506,16 +496,14 @@ class _SettingScreenState extends State<SettingScreen> {
                                           color: Colors.grey,
                                           width: 1.5,
                                         ),
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
+                                        borderRadius: BorderRadius.circular(10.0),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: const BorderSide(
                                           color: Colors.black,
                                           width: 1.5,
                                         ),
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
+                                        borderRadius: BorderRadius.circular(10.0),
                                       ),
                                       labelStyle: const TextStyle(
                                         color: Colors.black,
@@ -578,18 +566,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       ),
                     ),
                     const SizedBox(height: 16.0),
-                    ElevatedButton(
-                      onPressed: () {
-                        isSubscribed == true ? null : getSubscription();
-                      },
-                      child: Text(
-                        isSubscribed == true ? 'Subscribed' : 'Subscribe',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
+
                     // ListTile(
                     //   title: const Text(
                     //     'NSFW Content',
@@ -646,7 +623,7 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
               SizedBox(width: 8.0),
               Text(
-                'Version 1.0.0',
+                'Version 1.0.2',
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 14,

@@ -68,14 +68,14 @@ class _LocalAuthState extends State<LocalAuth> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue,
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 40),
             const Icon(
               Icons.fingerprint,
               size: 80,
-              color: Colors.blue,
+              color: Colors.black,
             ),
             const SizedBox(height: 20),
             if (isAuth)
@@ -93,9 +93,8 @@ class _LocalAuthState extends State<LocalAuth> {
                 label: const Text('Authenticate'),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

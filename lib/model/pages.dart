@@ -1,24 +1,15 @@
 // ignore_for_file: must_be_immutable
-
-import 'dart:io';
-import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:pixelline/api_service.dart';
 import 'package:pixelline/model/wallpaper.dart';
-import 'package:pixelline/util/util.dart';
-
 import 'card_screen.dart';
 
 class ViewContainer2 extends StatefulWidget {
   final String passedData;
   final bool isView3;
 
-  const ViewContainer2(
-      {Key? key, required this.passedData, this.isView3 = false})
-      : super(key: key);
+  const ViewContainer2({Key? key, required this.passedData, this.isView3 = false}) : super(key: key);
 
   @override
   State<ViewContainer2> createState() => _ContainerState();
@@ -41,8 +32,7 @@ class _ContainerState extends State<ViewContainer2> {
   bool isLoading = false;
   List<String> favorites = [];
 
-  late APIService apiService =
-      APIService(params: "search/${widget.passedData}");
+  late APIService apiService = APIService(params: "search/${widget.passedData}");
 
   @override
   void initState() {
@@ -59,8 +49,7 @@ class _ContainerState extends State<ViewContainer2> {
     });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      final List<Wallpaper> newWallpapers = await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -78,8 +67,7 @@ class _ContainerState extends State<ViewContainer2> {
   }
 
   bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollEndNotification &&
-        notification.metrics.extentAfter <= 1400) {
+    if (notification is ScrollEndNotification && notification.metrics.extentAfter <= 1400) {
       fetchWallpapers();
     }
     return false;
@@ -115,11 +103,10 @@ class _ContainerState2 extends State<ViewContainer3> {
   late Future<List<Wallpaper>> futureWallpapers;
   List<Wallpaper> favoriteWallpapers = [];
   int pageNumber = 1;
-  bool isLoading = false;
+  bool isLoading = true;
   List<String> favorites = [];
 
-  late APIService apiService =
-      APIService(params: "search/views/${widget.passedData}");
+  late APIService apiService = APIService(params: "search/views/${widget.passedData}");
 
   @override
   void initState() {
@@ -131,13 +118,9 @@ class _ContainerState2 extends State<ViewContainer3> {
 
   Future<void> fetchWallpapers() async {
     if (isLoading) return;
-    setState(() {
-      isLoading = true;
-    });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      final List<Wallpaper> newWallpapers = await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -155,8 +138,7 @@ class _ContainerState2 extends State<ViewContainer3> {
   }
 
   bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollEndNotification &&
-        notification.metrics.extentAfter <= 1400) {
+    if (notification is ScrollEndNotification && notification.metrics.extentAfter <= 1400) {
       fetchWallpapers();
     }
     return false;
@@ -244,8 +226,7 @@ class _MyLatestState extends State<Latest> {
     });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      final List<Wallpaper> newWallpapers = await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -263,8 +244,7 @@ class _MyLatestState extends State<Latest> {
   }
 
   bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollEndNotification &&
-        notification.metrics.extentAfter <= 1400) {
+    if (notification is ScrollEndNotification && notification.metrics.extentAfter <= 1400) {
       fetchWallpapers();
     }
     return false;
@@ -272,53 +252,26 @@ class _MyLatestState extends State<Latest> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Hold on'),
-              content: const Text('Do you want to leave this app?'),
-              actions: <Widget>[
-                ElevatedButton(
-                  child: const Text('No'),
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                  },
-                ),
-                ElevatedButton(
-                  child: const Text('Yes'),
-                  onPressed: () {
-                    exit(0);
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
-      child: Scaffold(
-        // appBar: AppBar(title: const Text("Latest Wallpapers")),
-        body: Stack(
-          children: [
-            const SizedBox(
-              height: 200,
-              width: double.infinity,
+    return Scaffold(
+      // appBar: AppBar(title: const Text("Latest Wallpapers")),
+      body: Stack(
+        children: [
+          const SizedBox(
+            height: 200,
+            width: double.infinity,
+          ),
+          NotificationListener<ScrollNotification>(
+            onNotification: _onScrollNotification,
+            child: CardScreen(
+              content: wallpapers,
             ),
-            NotificationListener<ScrollNotification>(
-              onNotification: _onScrollNotification,
-              child: CardScreen(
-                content: wallpapers,
-              ),
+          ),
+          if (isLoading)
+            // Loader widget displayed in the center of the screen
+            const Center(
+              child: CircularProgressIndicator(),
             ),
-            // if (isLoading)
-            //   // Loader widget displayed in the center of the screen
-            //   const Center(
-            //     child: CircularProgressIndicator(),
-            //   ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -347,8 +300,7 @@ class _MyPopulartState extends State<Popular> {
     });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      final List<Wallpaper> newWallpapers = await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -366,8 +318,7 @@ class _MyPopulartState extends State<Popular> {
   }
 
   bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollEndNotification &&
-        notification.metrics.extentAfter <= 1400) {
+    if (notification is ScrollEndNotification && notification.metrics.extentAfter <= 1400) {
       fetchWallpapers();
     }
     return false;
@@ -385,11 +336,11 @@ class _MyPopulartState extends State<Popular> {
               content: wallpapers,
             ),
           ),
-          // if (!isLoading)
-          //   // Loader widget displayed in the center of the screen
-          //   const Center(
-          //     child: CircularProgressIndicator(),
-          //   ),
+          if (!isLoading)
+            // Loader widget displayed in the center of the screen
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
         ],
       ),
     );
@@ -420,8 +371,7 @@ class _MyRandomState extends State<RandomPage> {
     });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      final List<Wallpaper> newWallpapers = await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -439,8 +389,7 @@ class _MyRandomState extends State<RandomPage> {
   }
 
   bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollEndNotification &&
-        notification.metrics.extentAfter <= 1400) {
+    if (notification is ScrollEndNotification && notification.metrics.extentAfter <= 1400) {
       fetchWallpapers();
     }
     return false;
@@ -457,9 +406,9 @@ class _MyRandomState extends State<RandomPage> {
               content: wallpapers,
             ),
           ),
-          // if (isLoading)
-          //   // Loader widget displayed in the center of the screen
-          //   const Center(child: CircularProgressIndicator()),
+          if (isLoading)
+            // Loader widget displayed in the center of the screen
+            const Center(child: CircularProgressIndicator()),
         ],
       ),
     );
@@ -489,8 +438,7 @@ class _MySimilarState extends State<SimilarPage> {
     });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.similarFetch(widget.param);
+      final List<Wallpaper> newWallpapers = await apiService.similarFetch(widget.param);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -509,8 +457,6 @@ class _MySimilarState extends State<SimilarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CardScreen(
-      content: wallpapers,
-    );
+    return CardScreen(content: wallpapers, type: 'similar');
   }
 }

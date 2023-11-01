@@ -8,7 +8,6 @@ import 'package:pixelline/api_service.dart';
 import 'package:pixelline/model/appwrite_sevices.dart';
 import 'package:pixelline/model/wallpaper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../detail_screen.dart';
 
 class CardPage extends StatefulWidget {
   final int randomOffset;
@@ -35,10 +34,8 @@ class _ImageCaedState extends State<CardPage> {
   List<DocumentData> documents = [];
   late String documentId;
   late RealtimeSubscription subscribtion;
-  final String collectionId =
-      '6490339aacca8d3aecf2'; // Replace with your actual collection ID
-  final String databaseId =
-      '649033920793f53a7112'; // Replace with your actual database ID
+  final String collectionId = '6490339aacca8d3aecf2'; // Replace with your actual collection ID
+  final String databaseId = '649033920793f53a7112'; // Replace with your actual database ID
 
   @override
   void initState() {
@@ -68,22 +65,19 @@ class _ImageCaedState extends State<CardPage> {
       setState(() {
         widget.isLoadingImages = true;
       });
-      final List<FileObject> objects =
-          await superbase.storage.from('images').list(
-                path: 'Jpg/part-1',
-                searchOptions: SearchOptions(
-                  limit: 1,
-                  offset: randomCount,
-                ),
-              );
+      final List<FileObject> objects = await superbase.storage.from('images').list(
+            path: 'Jpg/part-1',
+            searchOptions: SearchOptions(
+              limit: 1,
+              offset: randomCount,
+            ),
+          );
       if (_isMounted && objects.isNotEmpty) {
         setState(() {
           final data = objects.map((file) => file);
           imageFiles = data.first.name;
         });
-        String image = superbase.storage
-            .from('images')
-            .getPublicUrl('Jpg/part-1/$imageFiles');
+        String image = superbase.storage.from('images').getPublicUrl('Jpg/part-1/$imageFiles');
         setState(() {
           imageUrl = image;
         });
@@ -199,9 +193,7 @@ class _ImageCaedState extends State<CardPage> {
 
       for (var document in listData.documents) {
         var data = document.data;
-        if (data['url'] == item &&
-            data['userEmail'] == promise.email &&
-            data['userName'] == promise.name) {
+        if (data['url'] == item && data['userEmail'] == promise.email && data['userName'] == promise.name) {
           documentId = document.$id;
         }
       }
@@ -231,8 +223,7 @@ class _ImageCaedState extends State<CardPage> {
             borderRadius: BorderRadius.circular(20.0),
           ),
           actionsPadding: const EdgeInsets.all(10),
-          title:
-              const Text("Warning..!!", style: TextStyle(color: Colors.black)),
+          title: const Text("Warning..!!", style: TextStyle(color: Colors.black)),
           content: const Text("Are you sure you want to remove this item?"),
           actions: [
             ElevatedButton(
@@ -270,8 +261,7 @@ class _ImageCaedState extends State<CardPage> {
               bottom: 5,
               right: 5,
               child: LikeButton(
-                onTap: (isLiked) =>
-                    onLikeButtonTap(isLiked, context, imagechanger),
+                onTap: (isLiked) => onLikeButtonTap(isLiked, context, imagechanger),
                 size: 45,
                 likeBuilder: (bool isLiked) {
                   bool isInFavorites = checkIfInFavorites(imagechanger);
@@ -297,8 +287,7 @@ class _ImageCaedState extends State<CardPage> {
 
       if (eventType.contains('database.*.collections.*.documents.*.create')) {
         handleDocumentCreation(payload);
-      } else if (eventType
-          .contains('database.*.collections.*.documents.*.delete')) {
+      } else if (eventType.contains('database.*.collections.*.documents.*.delete')) {
         handleDocumentUpdate(payload);
       }
     });

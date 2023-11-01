@@ -30,7 +30,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v1
         with:
-          flutter-version: "3.13.2" # Specify your desired Flutter version
+          flutter-version: "3.13.9" # Specify your desired Flutter version
 
       - name: Flutter pub get
         run: flutter pub get
@@ -43,5 +43,5 @@ jobs:
         with:
           artifacts: "build/app/outputs/apk/release/*"
           prerelease: false
-          tag: "v1.0.1" # Use the extracted version
+          tag: "v1.0.2" 
           token: ${{ secrets.TOKEN }}

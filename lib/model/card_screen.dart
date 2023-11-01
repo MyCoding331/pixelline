@@ -1,7 +1,6 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, must_be_immutable
 
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -16,9 +15,10 @@ import '../api_service.dart';
 import '../detail_screen.dart';
 
 class CardScreen extends StatefulWidget {
+  String? type;
   final List<Wallpaper> content;
 
-  const CardScreen({Key? key, required this.content}) : super(key: key);
+  CardScreen({Key? key, required this.content, this.type = 'card'}) : super(key: key);
 
   @override
   _CardScreenState createState() => _CardScreenState();
@@ -27,10 +27,8 @@ class CardScreen extends StatefulWidget {
 class _CardScreenState extends State<CardScreen> {
   List<Wallpaper> documents = [];
   // List<String> favorites = [];
-  final String collectionId =
-      '6490339aacca8d3aecf2'; // Replace with your actual collection ID
-  final String databaseId =
-      '649033920793f53a7112'; // Replace with your actual database ID
+  final String collectionId = '6490339aacca8d3aecf2'; // Replace with your actual collection ID
+  final String databaseId = '649033920793f53a7112'; // Replace with your actual database ID
   late String documentId;
   bool isAdded = true;
   late RealtimeSubscription subscribtion;
@@ -50,8 +48,7 @@ class _CardScreenState extends State<CardScreen> {
     nativeAd = NativeAd(
       adUnitId: adsNative,
       request: const AdRequest(),
-      nativeTemplateStyle:
-          NativeTemplateStyle(templateType: TemplateType.medium),
+      nativeTemplateStyle: NativeTemplateStyle(templateType: TemplateType.medium),
       listener: NativeAdListener(
         onAdLoaded: (ad) {
           setState(() {
@@ -72,10 +69,7 @@ class _CardScreenState extends State<CardScreen> {
   Future<void> initializing() async {
     final prefs = await SharedPreferences.getInstance();
     final newData = WallpaperStorage<Wallpaper>(
-        storageKey: 'favorites',
-        fromJson: (json) => Wallpaper.fromJson(json),
-        toJson: (videos) => videos.toJson(),
-        prefs: prefs);
+        storageKey: 'favorites', fromJson: (json) => Wallpaper.fromJson(json), toJson: (videos) => videos.toJson(), prefs: prefs);
     setState(() {
       wallpaperStorage = newData;
     });
@@ -101,14 +95,27 @@ class _CardScreenState extends State<CardScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    if (kDebugMode) {
+      print(widget.type);
+    }
     return Column(
       children: [
         Expanded(
           child: CustomScrollView(
             slivers: [
-              const SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 70,
+              SliverToBoxAdapter(
+                child: Container(
+                  // height: widget.type!.contains('similar') ? 25 : 70,
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+                  child: widget.type!.contains('similar')
+                      ? const Text(
+                          'Similar :',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      : null,
                 ),
               ),
               SliverGrid(
@@ -120,17 +127,14 @@ class _CardScreenState extends State<CardScreen> {
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    if (screenWidth <= 600
-                        ? index % 12 == 0
-                        : index % 18 == 0 && index != 0) {
+                    if (screenWidth <= 600 ? index % 50 == 0 : index % 50 == 0 && index != 0 && nativeAd != null) {
                       // Show the ad after every 10 cards (adjust as needed)
                       return AdContainer(
                         ad: nativeAd!,
                       );
                     } else {
                       // Show a regular card
-                      final Wallpaper wallpaper =
-                          widget.content[index - (index ~/ 10)];
+                      final Wallpaper wallpaper = widget.content[index - (index ~/ 10)];
                       final newImage = wallpaper.url;
 
                       return GestureDetector(
@@ -152,33 +156,26 @@ class _CardScreenState extends State<CardScreen> {
                           borderRadius: BorderRadius.circular(12.0),
                           child: Stack(
                             children: [
-                              ImageComponent(
-                                  imagePath:
-                                      newImage), // Change to your image source
+                              ImageComponent(imagePath: newImage), // Change to your image source
 
                               Positioned(
                                 bottom: 10,
                                 right: 10,
                                 child: Center(
                                   child: LikeButton(
-                                    onTap: (isLiked) => onLikeButtonTap(
-                                        isLiked, context, wallpaper, index),
+                                    onTap: (isLiked) => onLikeButtonTap(isLiked, context, wallpaper, index),
                                     size: 42,
                                     likeBuilder: (bool isLiked) {
-                                      bool isInFavorites =
-                                          checkIfInFavorites(wallpaper.id);
+                                      bool isInFavorites = checkIfInFavorites(wallpaper.id);
                                       return ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(20000),
+                                        borderRadius: BorderRadius.circular(20000),
                                         child: Container(
                                           width: 30,
                                           height: 30,
                                           color: Colors.black26,
                                           child: Icon(
                                             Icons.favorite,
-                                            color: isInFavorites
-                                                ? Colors.red
-                                                : Colors.white,
+                                            color: isInFavorites ? Colors.red : Colors.white,
                                             size: 22,
                                           ),
                                         ),
@@ -193,8 +190,7 @@ class _CardScreenState extends State<CardScreen> {
                       );
                     }
                   },
-                  childCount:
-                      widget.content.length + (widget.content.length ~/ 10),
+                  childCount: widget.content.length + (widget.content.length ~/ 10),
                 ),
               ),
               const SliverToBoxAdapter(
@@ -295,8 +291,7 @@ class _CardScreenState extends State<CardScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 backgroundColor: Colors.red,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ],
@@ -315,8 +310,7 @@ class _CardScreenState extends State<CardScreen> {
     return true; // Return true to indicate that the like state has been changed
   }
 
-  Future<bool?> onLikeButtonTap(
-      bool isLiked, context, Wallpaper wallpaper, index) async {
+  Future<bool?> onLikeButtonTap(bool isLiked, context, Wallpaper wallpaper, index) async {
     // Check if the image is in favorites
     bool isInFavorites = checkIfInFavorites(wallpaper.id);
 
@@ -340,8 +334,7 @@ class _CardScreenState extends State<CardScreen> {
 
       if (eventType.contains('database.*.collections.*.documents.*.create')) {
         handleDocumentCreation(payload);
-      } else if (eventType
-          .contains('database.*.collections.*.documents.*.delete')) {
+      } else if (eventType.contains('database.*.collections.*.documents.*.delete')) {
         handleDocumentUpdate(payload);
       }
     });

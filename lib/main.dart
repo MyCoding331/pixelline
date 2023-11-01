@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pixelline/model/Auth/auth.dart';
-import 'package:pixelline/model/Auth/locaAuth.dart';
+import 'package:pixelline/model/Auth/local_authuth.dart';
 import 'model/appwrite_sevices.dart';
 
 import 'wallpaper_screen.dart';
@@ -16,8 +16,7 @@ void main() {
   MobileAds.instance.initialize();
   Permission.storage.request();
   Permission.manageExternalStorage.request();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-      overlays: SystemUiOverlay.values);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
   runApp(const WallpaperApp());
 }
 
@@ -59,10 +58,8 @@ class _WallpaperAppState extends State<WallpaperApp> {
 
   void checkIsLocked() async {
     try {
-      // Get the user preferences
       var prefs = await account.getPrefs();
 
-      // Update the isNSFWEnabled state based on the user preferences
       setState(() {
         isLocked = prefs.data['isLocked'] ?? false;
       });

@@ -56,8 +56,7 @@ class _SearchScreenState extends State<SearchPage> {
     // });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      final List<Wallpaper> newWallpapers = await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -82,63 +81,13 @@ class _SearchScreenState extends State<SearchPage> {
     }
   }
 
-  List<String> imageData = [
-    'assets/images/categ/superheroes.jpg',
-    "assets/images/categ/games.webp",
-    "assets/images/categ/creative.webp",
-    "assets/images/categ/bikes.jpg",
-    "assets/images/categ/cars.jpg",
-    "assets/images/categ/3d.jpg",
-    "assets/images/categ/nature.jpg",
-    "assets/images/categ/tv-shows.jpg",
-    "assets/images/categ/movies.jpg",
-    "assets/images/categ/celebration.jpg",
-    "assets/images/categ/computer.jpg",
-    "assets/images/categ/planes.jpg",
-    "assets/images/categ/sports.jpg",
-    "assets/images/categ/animals.jpg",
-    "assets/images/categ/logos.jpg",
-    "assets/images/categ/inspiration.jpg",
-    "assets/images/categ/artist.jpg",
-    "assets/images/categ/typography.jpg",
-    "assets/images/categ/cute.jpg",
-    "assets/images/categ/girls.jpg",
-    "assets/images/categ/abstract.jpg",
-    "assets/images/categ/birds.jpg",
-    "assets/images/categ/graphics.jpg",
-    "assets/images/categ/world.jpg",
-    "assets/images/categ/flowers.jpg",
-    "assets/images/categ/photography.jpg",
-    "assets/images/categ/celebration.jpg",
-    "assets/images/categ/music.jpg",
-    "assets/images/categ/insian-celebs.jpg",
-    "assets/images/categ/digital-universe.jpg",
-    "assets/images/categ/love.webp",
-    "assets/images/categ/fantasy-girls.jpg",
-    "assets/images/categ/anime.jpg",
-    "assets/images/categ/cartoons.jpg",
-    "assets/images/categ/others.webp",
-    "assets/images/categ/lifestyle.png",
-    "assets/images/categ/food.webp",
-  ];
-  String getRandomImage(List<String> imageList) {
-    Random random = Random();
-    int index = random.nextInt(imageList.length);
-    return imageList[index];
-  }
-
   @override
   Widget build(BuildContext context) {
-    // String randomImagePath = getRandomImage(imageData);
-    // String inputText = '';
-    // print(randomImagePath);
-    // print(randomWallpaper!.url);
     return Scaffold(
       body: Stack(
         children: [
           ImageFiltered(
-            imageFilter: ImageFilter.blur(
-                sigmaX: 2, sigmaY: 2), // Adjust blur strength if needed
+            imageFilter: ImageFilter.blur(sigmaX: 1, sigmaY: 1), // Adjust blur strength if needed
             child: randomWallpaper != null
                 ? CachedNetworkImage(
                     imageUrl: randomWallpaper!.url,
