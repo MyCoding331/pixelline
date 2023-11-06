@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:pixelline/model/Auth/auth.dart';
-import 'package:pixelline/model/Auth/local_authuth.dart';
-import 'model/appwrite_sevices.dart';
+import 'package:pixelline/screens/AuthScreen/auth_screen.dart';
+import 'package:pixelline/screens/LocalAuthScreen/local_auth_screen.dart';
+import 'services/appwrite_sevices.dart';
 
 import 'wallpaper_screen.dart';
 
@@ -16,7 +16,8 @@ void main() {
   MobileAds.instance.initialize();
   Permission.storage.request();
   Permission.manageExternalStorage.request();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+      overlays: SystemUiOverlay.values);
   runApp(const WallpaperApp());
 }
 
@@ -94,7 +95,6 @@ class _WallpaperAppState extends State<WallpaperApp> {
         future: _userSessionFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show a loading indicator while checking the user session
             return const Scaffold(
               body: Center(
                 child: CircularProgressIndicator(),
@@ -102,31 +102,26 @@ class _WallpaperAppState extends State<WallpaperApp> {
             );
           } else {
             if (snapshot.hasError) {
-              // Handle any errors that occurred while checking the user session
               return Scaffold(
                 body: Center(
                   child: Text('Error: ${snapshot.error}'),
                 ),
               );
             } else {
-              // User session exists, navigate to the home screen
               if (snapshot.data == true) {
                 if (kDebugMode) {
                   print(snapshot.data);
                 }
                 if (isLocked) {
-                  return const LocalAuth();
+                  return const LocalAuthScreen();
                 } else {
                   return const WallpaperScreen();
                 }
-              }
-              // User session does not exist, navigate to the login screen
-              else {
+              } else {
                 if (kDebugMode) {
                   print(snapshot.data);
                 }
-                return const AuthPage();
-                // const WallpaperScreen();
+                return const AuthScreen();
               }
             }
           }
@@ -143,7 +138,6 @@ class _WallpaperAppState extends State<WallpaperApp> {
 
       return true;
     } catch (e) {
-      // Handle any errors that occurred while checking the user session
       if (kDebugMode) {
         print('Error: $e');
       }

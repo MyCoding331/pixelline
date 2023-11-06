@@ -3,14 +3,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
 import 'package:path_provider/path_provider.dart';
-import 'package:pixelline/model/appwrite_sevices.dart';
-import 'package:pixelline/model/wallpaper.dart';
+import 'package:pixelline/services/appwrite_sevices.dart';
+import 'package:pixelline/services/wallpaper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WallpaperStorage<T> {
@@ -85,19 +83,15 @@ class WallpaperStorage<T> {
     return [];
   }
 
-// Backup data in version 1.0.2
   Future<void> backupData(String key, List<T> dataList) async {
     if (kDebugMode) {
       print('Backing up data...');
     }
-    // final externalDir =externalDirectory.then((value) => value!.path);
     final email = await getEmail();
     final name = await getName();
     final externalDir = await getExternalStorageDirectory();
     final filePath = '${externalDir!.path}/$email-$key.json';
     final file = File(filePath);
-    // print(email);
-    // print(name);
     if (!await file.exists()) {
       await file.create();
     }
@@ -127,7 +121,7 @@ class WallpaperStorage<T> {
         final fileDetails = await storage.createFile(
           file: fileMultipartFile,
           bucketId: bucketId,
-          fileId: uniqueId, // Generate a unique ID
+          fileId: uniqueId,
         );
 
         await database.createDocument(
@@ -150,11 +144,6 @@ class WallpaperStorage<T> {
             documentList.documents.map((e) => e.data['fileId']).toList();
 
         for (final documentId in documentIds) {
-          // await storage.updateFile(
-          //   bucketId: '64f3a92c7ab086900e74',
-          //   fileId: documentId,
-          // );
-
           await storage.deleteFile(
             bucketId: bucketId,
             fileId: documentId,
@@ -162,7 +151,7 @@ class WallpaperStorage<T> {
           await storage.createFile(
             file: fileMultipartFile,
             bucketId: bucketId,
-            fileId: documentId, // Generate a unique ID
+            fileId: documentId,
           );
 
           if (kDebugMode) {
@@ -177,7 +166,6 @@ class WallpaperStorage<T> {
       if (kDebugMode) {
         print('Error backing up data: $e');
       }
-      // Handle the error as needed (e.g., log, display an error message).
     }
   }
 
@@ -252,17 +240,10 @@ class WallpaperStorage<T> {
     }
 
     final dataList = await getDataList();
-
     dataList.removeWhere((data) {
-      // final item = fromJson(jsonDecode(data as String));
       if (data is Wallpaper && data.id == dataId) {
         return true;
       }
-      // else if (data is Stars && data.id == dataId) {
-      //   return true;
-      // } else if (data is Channels && data.id == dataId) {
-      //   return true;
-      // }
       return false;
     });
 
@@ -282,20 +263,69 @@ class WallpaperStorage<T> {
   }
 }
 
-Future<void> insertRandomAds(List<Wallpaper> wallpapers) async {
-  const int numAdsToInsert = 4; // You can adjust this as needed
-
-  for (int i = 0; i < numAdsToInsert; i++) {
-    final int randomIndex = Random()
-        .nextInt(wallpapers.length + 1); // +1 to allow inserting at the end
-    // final bool newBool = Random().nextBool();
-
-    wallpapers.insert(
-      randomIndex,
-      Wallpaper(
-        id: 'id$i',
-        url: 'https://alterassumeaggravate.com',
-      ),
-    );
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
+}
+
+randomStringGenerataor(int length) {
+  final random = Random();
+  const chars =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+  String result = '';
+  for (int i = 0; i < length; i++) {
+    result += chars[random.nextInt(chars.length)];
+  }
+
+  return result;
+}
+
+randomIntGenrator() {
+  Random random = Random();
+
+  // Generate a random 6-digit integer
+  int min = 100000; // Minimum 6-digit integer (100000)
+  int max = 999999; // Maximum 6-digit integer (999999)
+  int randomSixDigitNumber = min + random.nextInt(max - min);
+  if (kDebugMode) {
+    print('Random 6-digit number: $randomSixDigitNumber');
+  }
+  return randomSixDigitNumber;
+}
+
+void showSnackBar(BuildContext context, String text) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      duration: const Duration(seconds: 2),
+      content: Row(
+        children: [
+          const Icon(Icons.check_circle, color: Colors.white),
+          const SizedBox(width: 8),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Text(
+                text,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Colors.black87,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      behavior: SnackBarBehavior.floating,
+      // action: SnackBarAction(
+      //   label: 'Undo',
+      //   textColor: Colors.white,
+      //   onPressed: () {
+      //     // Implement your undo logic here
+      //   },
+      // ),
+    ),
+  );
 }

@@ -3,15 +3,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:pixelline/api_service.dart';
-import 'package:pixelline/categories.dart';
-import 'package:pixelline/components/ads_units.dart';
-import 'package:pixelline/model/appwrite_sevices.dart';
-import 'package:pixelline/model/tab_bar.dart';
-import 'package:pixelline/search_page.dart';
-import 'package:pixelline/fav_screen.dart';
-import 'package:pixelline/model/setting_page.dart';
-import 'package:pixelline/model/Auth/auth.dart';
+import 'package:pixelline/services/api_service.dart';
+import 'package:pixelline/components/ads_units_ids.dart';
+import 'package:pixelline/services/appwrite_sevices.dart';
+import 'package:pixelline/components/tab_bar.dart';
+import 'package:pixelline/screens/AuthScreen/auth_screen.dart';
+import 'package:pixelline/screens/CategorieScreen/categorie_screen.dart';
+import 'package:pixelline/screens/FavoriteScreen/favorite_screen.dart';
+import 'package:pixelline/screens/SearchScreen/search_screen.dart';
+import 'package:pixelline/screens/SettingScreen/setting_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WallpaperScreen extends StatefulWidget {
@@ -21,25 +21,22 @@ class WallpaperScreen extends StatefulWidget {
   State<WallpaperScreen> createState() => _WallpaperScreenState();
 }
 
-class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderStateMixin {
+class _WallpaperScreenState extends State<WallpaperScreen>
+    with TickerProviderStateMixin {
   final APIService apiService = APIService(params: "popular/1");
   int pageIndex = 0;
-  final ScrollController _scrollController = ScrollController();
+
   List<String> favorites = [];
 
   double iconSize = 25.0;
 
-  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1));
   BannerAd? _bannerAd;
   BannerAd? _newBannerAd;
   @override
   void initState() {
     super.initState();
     setUserDetails();
-    _scrollController.addListener(() {
-      _controller;
-      // loadFavorites();
-    });
+
     initializeingBanner();
     checkUserSession();
   }
@@ -97,7 +94,6 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
 
   @override
   void dispose() {
-    _controller.dispose();
     _bannerAd?.dispose();
     _newBannerAd?.dispose();
     super.dispose();
@@ -121,9 +117,9 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
   Widget build(BuildContext context) {
     pages.addAll([
       const TabBarContainer(),
-      const FavScreen(),
-      const Categories(),
-      const SearchPage(),
+      const FavoriteScreen(),
+      const CategorieScreen(),
+      const SearchScreen(),
     ]);
     final screenSize = MediaQuery.of(context).size;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -165,7 +161,7 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const AuthPage(),
+                              builder: (context) => const AuthScreen(),
                             ),
                           );
                         }
@@ -176,7 +172,8 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                       tooltip: "profile",
                       position: PopupMenuPosition.under,
                       elevation: 4,
-                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
                         const PopupMenuItem<String>(
                           value: 'profile',
                           child: ListTile(
@@ -236,14 +233,18 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 0 ? Colors.black : Colors.white,
+                                backgroundColor: pageIndex == 0
+                                    ? Colors.black
+                                    : Colors.white,
                                 padding: const EdgeInsets.all(20),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.home,
                                 size: iconSize,
-                                color: pageIndex == 0 ? Colors.white : Colors.black,
+                                color: pageIndex == 0
+                                    ? Colors.white
+                                    : Colors.black,
                               ),
                             ),
                             const SizedBox(height: 40),
@@ -255,14 +256,18 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 1 ? Colors.black : Colors.white,
+                                backgroundColor: pageIndex == 1
+                                    ? Colors.black
+                                    : Colors.white,
                                 padding: const EdgeInsets.all(22),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.favorite_outline,
                                 size: iconSize,
-                                color: pageIndex == 1 ? Colors.white : Colors.black,
+                                color: pageIndex == 1
+                                    ? Colors.white
+                                    : Colors.black,
                               ),
                             ),
                             const SizedBox(height: 40),
@@ -274,14 +279,18 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 2 ? Colors.black : Colors.white,
+                                backgroundColor: pageIndex == 2
+                                    ? Colors.black
+                                    : Colors.white,
                                 padding: const EdgeInsets.all(22),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.category_outlined,
                                 size: iconSize,
-                                color: pageIndex == 2 ? Colors.white : Colors.black,
+                                color: pageIndex == 2
+                                    ? Colors.white
+                                    : Colors.black,
                               ),
                             ),
                             const SizedBox(height: 40),
@@ -293,14 +302,18 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: const CircleBorder(),
-                                backgroundColor: pageIndex == 3 ? Colors.black : Colors.white,
+                                backgroundColor: pageIndex == 3
+                                    ? Colors.black
+                                    : Colors.white,
                                 padding: const EdgeInsets.all(22),
                                 shadowColor: Colors.transparent,
                               ),
                               child: Icon(
                                 Icons.search,
                                 size: iconSize,
-                                color: pageIndex == 3 ? Colors.white : Colors.black,
+                                color: pageIndex == 3
+                                    ? Colors.white
+                                    : Colors.black,
                               ),
                             ),
                           ],
@@ -331,7 +344,8 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -379,7 +393,9 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
                     ),
                   ),
                 ),
-              if (_bannerAd != null && _getAppBarTitle(pageIndex) != "Search" && _getAppBarTitle(pageIndex) != "Favorites")
+              if (_bannerAd != null &&
+                  _getAppBarTitle(pageIndex) != "Search" &&
+                  _getAppBarTitle(pageIndex) != "Favorites")
                 Align(
                   alignment: Alignment.topCenter,
                   child: SizedBox(
@@ -396,7 +412,8 @@ class _WallpaperScreenState extends State<WallpaperScreen> with TickerProviderSt
   }
 }
 
-Widget buildIconButtonWithText(IconData icon, bool isSelected, String label, VoidCallback onPressed) {
+Widget buildIconButtonWithText(
+    IconData icon, bool isSelected, String label, VoidCallback onPressed) {
   return GestureDetector(
     onTap: onPressed,
     child: Row(
@@ -425,7 +442,10 @@ Widget buildIconButtonWithText(IconData icon, bool isSelected, String label, Voi
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
                     label,
-                    style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
