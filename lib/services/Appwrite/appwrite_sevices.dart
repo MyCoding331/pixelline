@@ -1,5 +1,4 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 Client client = Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
@@ -16,6 +15,3 @@ final Storage storage = Storage(client);
 final Locale local = Locale(client);
 // Subscribe to files channel
 final Realtime realtime = Realtime(client);
-
-final superbase = SupabaseClient(url, anonKey,
-    gotrueAsyncStorage: SharedPreferencesGotrueAsyncStorage());
