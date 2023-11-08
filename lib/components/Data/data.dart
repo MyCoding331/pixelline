@@ -138,5 +138,5 @@ List<Map<String, dynamic>> imageData = [
     'title': "Food",
     'image': "assets/images/categ/food.webp",
   },
-  // {title: "",},
+
 ];

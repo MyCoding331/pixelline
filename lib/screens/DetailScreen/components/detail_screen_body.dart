@@ -9,8 +9,9 @@ import 'package:like_button/like_button.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:pixelline/components/ads_units_ids.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/components/AdUnits/ads_units_ids.dart';
+import 'package:pixelline/services/Api/api_service.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/SimilarScreen/similar_screen.dart';
 import 'package:pixelline/screens/TagScreen/tag_screen.dart';
 import 'package:pixelline/util/util.dart';
@@ -39,15 +40,16 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
   bool isLoading = false;
   late bool isFavorite;
   bool onDownloadIsLoading = false;
+  bool setWallpaperIsLoading = false;
   bool isWallpaperSet = false;
   bool isDownloaded = false;
+  bool similarOnSwipe = false;
   static const double iconSize = 30;
   List<Wallpaper> documents = [];
+  List<Wallpaper> similarWallpapers = [];
+  final APIService apiService = APIService(params: "similar");
   late final WallpaperStorage<Wallpaper> wallpaperStorage;
-  final String collectionId =
-      '6490339aacca8d3aecf2'; // Replace with your actual collection ID
-  final String databaseId =
-      '649033920793f53a7112'; // Replace with your actual database ID
+
   int _selectedIndex = 0;
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
@@ -58,6 +60,7 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
     initializing().then((_) => loadFavorites());
     isFavorite = false;
     checkIfInFavorites(widget.imageUrl);
+    fetchSimilarWallpapers();
   }
 
   void _loadInterstitialAd() {
@@ -199,7 +202,7 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
   Future<void> setWallpaper(
       String imageUrl, int type, BuildContext context) async {
     setState(() {
-      isLoading = true;
+      setWallpaperIsLoading = true;
     });
 
     final wallpaperTypes = [
@@ -247,7 +250,7 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
 
       if (result) {
         setState(() {
-          isLoading = false;
+          setWallpaperIsLoading = false;
           isWallpaperSet = true;
         });
       } else {
@@ -620,213 +623,287 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
     );
   }
 
+  Future<void> fetchSimilarWallpapers() async {
+    if (isLoading) return;
+    setState(() {
+      isLoading = true;
+    });
+    checkSimilar();
+    try {
+      if (kDebugMode) {
+        print('similarOnSwipe $similarOnSwipe');
+      }
+      final List<Wallpaper>? newWallpapers = await apiService.similarFetch(
+        widget.imageId,
+      );
+      final currentWallpaper =
+          Wallpaper(id: widget.imageId, url: widget.imageUrl);
+      similarOnSwipe == true
+          ? setState(() {
+              similarWallpapers.addAll([
+                currentWallpaper,
+                ...newWallpapers!,
+              ]);
+
+              isLoading = false;
+            })
+          : setState(() {
+              similarWallpapers.addAll([
+                currentWallpaper,
+              ]);
+
+              isLoading = false;
+            });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      if (kDebugMode) {
+        print('Failed to load wallpapers: $e');
+      }
+    }
+  }
+
+  void checkSimilar() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      // Update the Appwrite document with the new NSFW status
+      bool? similar = prefs.getBool(
+        'similarOnSwipe',
+      );
+
+      setState(() {
+        similarOnSwipe = similar ?? false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching user preferences: $e');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // print(widget.imageId);
-    final modifiedImage = widget.imageUrl
-        .replaceAll("wallpapers/thumb", "download")
-        .replaceAll(".jpg", "-1080x1920.jpg");
-    final uniqueTag = UniqueKey().toString();
-
-    return WillPopScope(
-      onWillPop: () async {
-        // Call loadFavorites function when the back button is pressed
-        loadFavorites();
-        return true;
-      },
-      child: Scaffold(
-        body: Stack(
-          children: [
-            ImageFiltered(
-              imageFilter: ImageFilter.blur(
-                  sigmaX: 50,
-                  sigmaY:
-                      50), // Adjust the sigmaX and sigmaY for blur intensity
-              child: CachedNetworkImage(
-                imageUrl: modifiedImage,
-                fit: BoxFit.cover,
-                height: double.infinity,
-                width: double.infinity,
-              ),
+    if (isLoading) {
+      return CircularIndicator();
+    } else {
+      return WillPopScope(
+        onWillPop: () async {
+          // Call loadFavorites function when the back button is pressed
+          loadFavorites();
+          return true;
+        },
+        child: Scaffold(
+          body: PageView.builder(
+            itemCount: similarWallpapers.length,
+            controller: PageController(
+              initialPage: 0, // Set the initial page as needed
             ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    height: 35,
-                  ),
+            itemBuilder: (context, index) {
+              final wallpaper = similarWallpapers[index];
+              final modifiedImage = wallpaper.url
+                  .replaceAll("wallpapers/thumb", "download")
+                  .replaceAll(".jpg", "-1080x1920.jpg");
+              final uniqueTag = UniqueKey().toString();
+              return detailCard(wallpaper, uniqueTag, modifiedImage, context);
+            },
+          ),
+        ),
+      );
+    }
+  }
 
-                  // Image wrapped in Hero widget
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 5),
-                      child: Hero(
-                        tag: uniqueTag,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            // color: Colors.black,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.white),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: CachedNetworkImage(
-                              imageUrl: modifiedImage,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              placeholder: (context, url) => const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    CircularProgressIndicator(
-                                      strokeWidth: 3.0,
-                                    ),
-                                    SizedBox(
-                                      height: 6,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+  Stack detailCard(
+    Wallpaper wallpaper,
+    String uniqueTag,
+    String modifiedImage,
+    BuildContext context,
+  ) {
+    return Stack(
+      children: [
+        ImageFiltered(
+          imageFilter: ImageFilter.blur(
+            sigmaX: 50,
+            sigmaY: 50,
+          ), // Adjust the sigmaX and sigmaY for blur intensity
+          child: CachedNetworkImage(
+            imageUrl: wallpaper.url,
+            fit: BoxFit.cover,
+            height: double.infinity,
+            width: double.infinity,
+          ),
+        ),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(
+                height: 35,
+              ),
 
-                  // Buttons wrapped in Align widget
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Align(
-                    alignment: Alignment.center,
+              // Image wrapped in Hero widget
+              Expanded(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  child: Hero(
+                    tag: uniqueTag,
                     child: Container(
                       decoration: BoxDecoration(
                         // color: Colors.black,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: Colors.white),
                       ),
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      height: 55,
-                      width: double.infinity,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                if (!isLoading && _rewardedAd != null) {
-                                  _rewardedAd?.show(
-                                    onUserEarnedReward: (_, reward) {
-                                      _showConfirmationDialog(
-                                        modifiedImage,
-                                        context,
-                                      );
-                                    },
-                                  );
-                                } else {
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: CachedNetworkImage(
+                          imageUrl: modifiedImage,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          placeholder: (context, url) => Stack(
+                            children: [
+                              Image.network(
+                                wallpaper.url,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                              CircularIndicator()
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Buttons wrapped in Align widget
+              const SizedBox(
+                height: 10,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Container(
+                  decoration: BoxDecoration(
+                    // color: Colors.black,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white),
+                  ),
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  height: 55,
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            if (!setWallpaperIsLoading && _rewardedAd != null) {
+                              _rewardedAd?.show(
+                                onUserEarnedReward: (_, reward) {
                                   _showConfirmationDialog(
                                     modifiedImage,
                                     context,
                                   );
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(1200),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                child: buildFloatingActionButtonChild(),
-                              ),
-                            ),
-                          ),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                if (_interstitialAd != null) {
-                                  _interstitialAd?.show();
-                                } else {
-                                  downloadImage(
-                                    modifiedImage,
-                                  );
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(1200),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                child:
-                                    buildFloatingActionButtonChildForDownload(),
-                              ),
-                            ),
-                          ),
-                          LikeButton(
-                            onTap: (isLiked) => onLikeButtonTap(
-                                isLiked, context, widget.wallpaper),
-                            size: 42,
-                            likeBuilder: (bool isLiked) {
-                              bool isInFavorites =
-                                  checkIfInFavorites(widget.wallpaper.id);
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(20000),
-                                child: SizedBox(
-                                  width: 30,
-                                  height: 30,
-                                  child: Icon(
-                                    Icons.favorite,
-                                    color: isInFavorites
-                                        ? Colors.red
-                                        : Colors.white,
-                                    size: 22,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          if (widget.isNSFW == false)
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  _openMenu();
                                 },
-                                borderRadius: BorderRadius.circular(1200),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  child: const Icon(
-                                    Icons.more_vert_rounded,
-                                    size: 30,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                              );
+                            } else {
+                              _showConfirmationDialog(
+                                modifiedImage,
+                                context,
+                              );
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(1200),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            child: buildFloatingActionButtonChild(),
+                          ),
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            if (_interstitialAd != null) {
+                              _interstitialAd?.show();
+                            } else {
+                              downloadImage(
+                                modifiedImage,
+                              );
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(1200),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            child: buildFloatingActionButtonChildForDownload(),
+                          ),
+                        ),
+                      ),
+                      LikeButton(
+                        onTap: (isLiked) =>
+                            onLikeButtonTap(isLiked, context, widget.wallpaper),
+                        size: 42,
+                        likeBuilder: (bool isLiked) {
+                          bool isInFavorites =
+                              checkIfInFavorites(widget.wallpaper.id);
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(20000),
+                            child: SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: Icon(
+                                Icons.favorite,
+                                color:
+                                    isInFavorites ? Colors.red : Colors.white,
+                                size: 22,
                               ),
                             ),
-                        ],
+                          );
+                        },
                       ),
-                    ),
+                      if (widget.isNSFW == false)
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              _openMenu();
+                            },
+                            borderRadius: BorderRadius.circular(1200),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              child: const Icon(
+                                Icons.more_vert_rounded,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  const SizedBox(
-                    height: 50,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(
+                height: 50,
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
   Widget buildFloatingActionButtonChild() {
-    if (isLoading) {
-      return const SizedBox(
+    if (setWallpaperIsLoading) {
+      return SizedBox(
         width: 25.0,
         height: 25.0,
-        child: CircularProgressIndicator(
+        child: CircularIndicator(
           color: Colors.white,
-          strokeWidth: 3.0,
         ),
       );
     } else {
@@ -848,12 +925,11 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
 
   Widget buildFloatingActionButtonChildForDownload() {
     if (onDownloadIsLoading) {
-      return const SizedBox(
+      return SizedBox(
         width: 25.0,
         height: 25.0,
-        child: CircularProgressIndicator(
+        child: CircularIndicator(
           color: Colors.white,
-          strokeWidth: 3.0,
         ),
       );
     } else {

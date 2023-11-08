@@ -1,7 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'components/detail_screen_body.dart';
 
 class DetailScreen extends StatelessWidget {

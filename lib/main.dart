@@ -1,5 +1,4 @@
 // import 'package:appwrite/appwrite.dart';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,17 +6,21 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pixelline/screens/AuthScreen/auth_screen.dart';
 import 'package:pixelline/screens/LocalAuthScreen/local_auth_screen.dart';
-import 'services/appwrite_sevices.dart';
-
+import 'package:pixelline/services/GlobalContext/global_context.dart';
+import 'package:pixelline/util/util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'services/Appwrite/appwrite_sevices.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'wallpaper_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MobileAds.instance.initialize();
   Permission.storage.request();
   Permission.manageExternalStorage.request();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
       overlays: SystemUiOverlay.values);
+  await dotenv.load(fileName: ".env");
   runApp(const WallpaperApp());
 }
 
@@ -37,6 +40,7 @@ class _WallpaperAppState extends State<WallpaperApp> {
   @override
   void initState() {
     super.initState();
+
     _userSessionFuture = checkUserSession();
     checkIsLocked();
   }
@@ -74,6 +78,7 @@ class _WallpaperAppState extends State<WallpaperApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: GlobalContext.navigatorKey,
       title: 'Pixelline',
       theme: ThemeData(
         primarySwatch: createMaterialColor(Colors.black),
@@ -95,10 +100,8 @@ class _WallpaperAppState extends State<WallpaperApp> {
         future: _userSessionFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
+            return Scaffold(
+              body: CircularIndicator(),
             );
           } else {
             if (snapshot.hasError) {
@@ -134,7 +137,25 @@ class _WallpaperAppState extends State<WallpaperApp> {
   Future<bool> checkUserSession() async {
     try {
       // Check if the user session exists
-      await account.get();
+      final res = await account.get();
+      final loc = await local.get();
+      if (kDebugMode) {
+        print(' country is ${loc.country}');
+      }
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      // Update the Appwrite document with the new NSFW status
+      await prefs.setString(
+        'userId',
+        res.$id,
+      );
+      await prefs.setString(
+        'country',
+        loc.country,
+      );
+      await prefs.setString(
+        'ip',
+        loc.ip,
+      );
 
       return true;
     } catch (e) {

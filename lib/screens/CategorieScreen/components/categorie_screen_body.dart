@@ -1,8 +1,8 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:pixelline/components/data.dart';
-import 'package:pixelline/screens/CommonScreen/common_screen.dart';
+import 'package:pixelline/components/Data/data.dart';
+import 'package:pixelline/screens/CategorieScreen/components/categorie_card.dart';
 
 class CategorieScreenBody extends StatelessWidget {
   const CategorieScreenBody({super.key});
@@ -30,51 +30,10 @@ class CategorieScreenBody extends StatelessWidget {
               final name = item['title'];
               final image = item['image'];
               final link = name.replaceAll(" ", "-").toLowerCase();
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          CommonScreen(passedData: 'wall/$link'),
-                    ),
-                  );
-                  (BuildContext context) {
-                    Navigator.pop(context, 'reload');
-                  };
-                },
-                child: GridTile(
-                  child: Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6.0),
-                        child: Image.asset(
-                          image,
-                          fit: BoxFit.cover,
-                          height: 150,
-                          width: double.infinity,
-                          // color: Colors.grey,
-                        ),
-                      ),
-                      ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          bottomRight: Radius.circular(6.0),
-                          topLeft: Radius.circular(3.0),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 5, horizontal: 15),
-                          color: Colors.black,
-                          child: Text(
-                            name,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              return CategorieCard(
+                link: link,
+                image: image,
+                name: name,
               );
             },
             childCount: imageData.length,

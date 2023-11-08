@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:pixelline/util/util.dart';
 import 'package:pixelline/wallpaper_screen.dart';
 
 class LocalAuthScreenBody extends StatefulWidget {
@@ -80,13 +81,7 @@ class _LocalAuthScreenBodyState extends State<LocalAuthScreenBody> {
             ),
             const SizedBox(height: 20),
             if (isAuth)
-              const Center(
-                child: SizedBox(
-                  height: 50,
-                  width: 50,
-                  child: CircularProgressIndicator(),
-                ),
-              )
+              CircularIndicator()
             else
               ElevatedButton.icon(
                 onPressed: () => _authenticate(context),

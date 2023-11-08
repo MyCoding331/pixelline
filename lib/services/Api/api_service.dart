@@ -1,18 +1,21 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 
 class APIService {
-  String params;
-  final String baseUrl = 'https://hqwalls.vercel.app/api';
-  final imgHeaders = {'Accept': 'image/*', 'Accept-language': 'en'};
-  APIService({required this.params});
+  final String params;
+  final String baseUrl;
+
+  final Map<String, String> imgHeaders = {
+    'Accept': 'image/*',
+    'Accept-language': 'en',
+  };
+
+  APIService({required this.params}) : baseUrl = dotenv.env['BASE_API_LINK']!;
 
   Future<List<Wallpaper>> fetchWallpapers(int pageNo) async {
     final String url = '$baseUrl/$params/$pageNo';
-
     final response = await http.get(Uri.parse(url), headers: imgHeaders);
 
     if (response.statusCode == 200) {
@@ -25,9 +28,8 @@ class APIService {
     }
   }
 
-  Future<List<Wallpaper>> similarFetch(id) async {
+  Future<List<Wallpaper>?> similarFetch(id) async {
     final String url = '$baseUrl/$params$id';
-
     final response = await http.get(Uri.parse(url), headers: imgHeaders);
 
     if (response.statusCode == 200) {

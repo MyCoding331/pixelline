@@ -13,6 +13,7 @@ final String uniqueId = ID.unique();
 final Databases database = Databases(client);
 final Avatars avatars = Avatars(client);
 final Storage storage = Storage(client);
+final Locale local = Locale(client);
 // Subscribe to files channel
 final Realtime realtime = Realtime(client);
 

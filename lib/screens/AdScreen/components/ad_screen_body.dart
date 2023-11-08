@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:pixelline/components/ads_units_ids.dart';
+import 'package:pixelline/components/AdUnits/ads_units_ids.dart';
 
 class AdScreenBody extends StatefulWidget {
   late NativeAd ad;

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pixelline/util/util.dart';
 
 class ImageComponent extends StatelessWidget {
   final String imagePath;
@@ -42,10 +43,9 @@ class ImageComponent extends StatelessWidget {
                   child: SizedBox(
                     width: 30,
                     height: 30,
-                    child: CircularProgressIndicator(
-                      value: downloadProgress.progress,
-                      strokeWidth: 2.5,
-                    ),
+                    child: CircularIndicator(
+                        // value: downloadProgress.progress,
+                        ),
                   ),
                 ),
               ),
@@ -65,10 +65,9 @@ class ImageComponent extends StatelessWidget {
                   child: SizedBox(
                     width: 30,
                     height: 30,
-                    child: CircularProgressIndicator(
-                      value: downloadProgress.progress,
-                      strokeWidth: 2.5,
-                    ),
+                    child: CircularIndicator(
+                        // value: downloadProgress.progress,
+                        ),
                   ),
                 ),
               ),

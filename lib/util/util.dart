@@ -6,9 +6,11 @@ import 'dart:math';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pixelline/services/appwrite_sevices.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
+import 'package:pixelline/services/GlobalContext/global_context.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WallpaperStorage<T> {
@@ -16,18 +18,15 @@ class WallpaperStorage<T> {
   final T Function(Map<String, dynamic>) fromJson;
   final Map<String, dynamic> Function(T) toJson;
   final SharedPreferences prefs;
-  final String collectionId;
-  final String databaseId;
-  final String bucketId;
+  String collectionId = dotenv.env['APPWRITE_COLLECTION_ID']!;
+  String databaseId = dotenv.env['APPWRITE_DATABASE_ID']!;
+  String bucketId = dotenv.env['APPWRITE_BUCKET_ID']!;
 
   WallpaperStorage({
     required this.storageKey,
     required this.fromJson,
     required this.toJson,
     required this.prefs,
-    this.collectionId = '64fd7c137cfcf4d53c1d',
-    this.databaseId = '649033920793f53a7112',
-    this.bucketId = '64fd7bfeb5e437766a60',
   });
   Future<String?> getEmail() async {
     return prefs.getString('userEmail');
@@ -328,4 +327,24 @@ void showSnackBar(BuildContext context, String text) {
       // ),
     ),
   );
+}
+
+final BuildContext globalContext = GlobalContext.navigatorKey.currentContext!;
+final height = MediaQuery.of(globalContext).size.height;
+final width = MediaQuery.of(globalContext).size.width;
+
+// ignore: must_be_immutable
+class CircularIndicator extends StatelessWidget {
+  Color color;
+  CircularIndicator({super.key, this.color = Colors.black});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(
+        color: color,
+        strokeWidth: 3.0,
+      ),
+    );
+  }
 }

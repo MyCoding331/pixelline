@@ -4,10 +4,9 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pixelline/screens/CommonScreen/common_screen.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/screens/TagScreen/components/tags_card.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:http/http.dart' as http;
-import 'package:pixelline/util/util.dart';
 
 class TagScreenBody extends StatefulWidget {
   String param;
@@ -66,51 +65,7 @@ class _TagScreenBodyState extends State<TagScreenBody> {
           ),
         ),
         const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: Wrap(
-            spacing: 12.0,
-            runSpacing: 12.0,
-            children: tags.map((tag) {
-              final newTag =
-                  tag.id.replaceAll('-wallpapers', '').replaceAll('/', '');
-              final newTitle = tag.title
-                  .replaceAll('-wallpapers', '')
-                  .replaceAll('-', ' ')
-                  .replaceAll(',', '')
-                  .capitalize();
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          CommonScreen(passedData: 'wall/$newTag'),
-                    ),
-                  );
-                },
-                child: Chip(
-                  label: Text(
-                    newTitle,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: Colors.black54,
-                  elevation: 4,
-                  shadowColor: Colors.black.withOpacity(0.4),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
+        TagsCard(tags: tags),
       ],
     );
   }

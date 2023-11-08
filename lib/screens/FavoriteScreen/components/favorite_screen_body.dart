@@ -1,10 +1,8 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pixelline/components/image_component.dart';
-import 'package:pixelline/services/appwrite_sevices.dart';
-import 'package:pixelline/services/wallpaper.dart';
-import 'package:pixelline/screens/DetailScreen/detail_screen.dart';
+import 'package:pixelline/screens/FavoriteScreen/components/favorite_card.dart';
+import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/util/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -122,81 +120,11 @@ class _FavoriteScreenBodyState extends State<FavoriteScreenBody> {
     return Scaffold(
       body: Stack(
         children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 1000),
-            reverseDuration: const Duration(milliseconds: 100),
-            switchInCurve: Curves.easeInExpo,
-            switchOutCurve: Curves.easeOutExpo,
-            child: filteredFavorites.isNotEmpty
-                ? CustomScrollView(
-                    controller: _scrollController,
-                    slivers: [
-                      SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 6,
-                          crossAxisSpacing: 6,
-                          mainAxisExtent: 300,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final favorite = filteredFavorites[index];
-
-                            if (index == filteredFavorites.length) {
-                              return Container(
-                                color: Colors.transparent,
-                                child: const CupertinoActivityIndicator(
-                                    radius: 20),
-                              );
-                            }
-
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DetailScreen(
-                                      imageUrl: favorite.url,
-                                      wallpaper: favorite,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12.0),
-                                child: ImageComponent(imagePath: favorite.url),
-                              ),
-                            );
-                          },
-                          childCount: filteredFavorites
-                              .length, // +1 for the loading indicator
-                        ),
-                      ),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(
-                          height: 50,
-                        ), // Add some whitespace at the end
-                      ),
-                    ],
-                  )
-                : const Center(
-                    child: Text(
-                      "No Favorites Found",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 29,
-                      ),
-                    ),
-                  ),
+          FavoriteCard(
+            filteredFavorites: filteredFavorites,
+            scrollController: _scrollController,
           ),
-          if (isLoading)
-            Container(
-              color: Colors.white,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+          if (isLoading) CircularIndicator(),
         ],
       ),
     );

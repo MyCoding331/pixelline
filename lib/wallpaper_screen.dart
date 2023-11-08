@@ -3,10 +3,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:pixelline/services/api_service.dart';
-import 'package:pixelline/components/ads_units_ids.dart';
-import 'package:pixelline/services/appwrite_sevices.dart';
-import 'package:pixelline/components/tab_bar.dart';
+import 'package:pixelline/services/Api/api_service.dart';
+import 'package:pixelline/components/AdUnits/ads_units_ids.dart';
+import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
+import 'package:pixelline/components/TabBar/tab_bar.dart';
 import 'package:pixelline/screens/AuthScreen/auth_screen.dart';
 import 'package:pixelline/screens/CategorieScreen/categorie_screen.dart';
 import 'package:pixelline/screens/FavoriteScreen/favorite_screen.dart';
@@ -157,7 +157,7 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                           );
                         }
                         if (value == 'logout') {
-                          await account.deleteSession(sessionId: 'current');
+                          await account.deleteSessions();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(

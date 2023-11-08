@@ -4,7 +4,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
-import 'package:pixelline/services/appwrite_sevices.dart';
+import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
 import 'package:pixelline/screens/LatestWallpaperScreen/latest_wallpaper_screen.dart';
 import 'package:pixelline/screens/PopularWallpaperScreen/popular_wallpaper_screen.dart';
 import 'package:pixelline/screens/RandomWallpaperScreen/random_wallpaper_screen.dart';

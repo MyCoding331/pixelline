@@ -2,8 +2,8 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pixelline/services/api_service.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/services/Api/api_service.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/CardScreen/card_screen.dart';
 
 class SimilarScreenBody extends StatefulWidget {
@@ -35,11 +35,11 @@ class _SimilarScreenBodyState extends State<SimilarScreenBody> {
     });
 
     try {
-      final List<Wallpaper> newWallpapers =
+      final List<Wallpaper>? newWallpapers =
           await apiService.similarFetch(widget.param);
 
       setState(() {
-        wallpapers.addAll(newWallpapers);
+        wallpapers.addAll(newWallpapers!);
 
         isLoading = false;
       });

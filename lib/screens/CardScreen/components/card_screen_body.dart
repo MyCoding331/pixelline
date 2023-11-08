@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:like_button/like_button.dart';
-import 'package:pixelline/components/ads_units_ids.dart';
-import 'package:pixelline/components/image_component.dart';
+import 'package:pixelline/components/AdUnits/ads_units_ids.dart';
+import 'package:pixelline/components/ImageComponent/image_component.dart';
 import 'package:pixelline/screens/AdScreen/ad_screen.dart';
-import 'package:pixelline/services/appwrite_sevices.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/DetailScreen/detail_screen.dart';
 import 'package:pixelline/util/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -367,7 +367,6 @@ class _CardScreenBodyState extends State<CardScreenBody> {
 
   void handleDocumentUpdate(Map<String, dynamic> payload) {
     setState(() {
-      // documents = List<DocumentData>.from(payload['imageUrl']);
       loadFavorites();
     });
   }

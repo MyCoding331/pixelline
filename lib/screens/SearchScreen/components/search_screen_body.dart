@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pixelline/screens/CommonScreen/common_screen.dart';
-import 'package:pixelline/services/api_service.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/services/Api/api_service.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/util/util.dart';
 
 class SearchScreenBody extends StatefulWidget {
@@ -24,8 +24,6 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
   List<Wallpaper> wallpapers = [];
 
   int pageNumber = randomIntGenrator();
-
-  // bool isLoading = false;
 
   Wallpaper? randomWallpaper;
 
@@ -54,11 +52,6 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
   }
 
   Future<void> fetchWallpapers() async {
-    // if (isLoading) return;
-    // setState(() {
-    //   isLoading = true;
-    // });
-
     try {
       final List<Wallpaper> newWallpapers =
           await apiService.fetchWallpapers(pageNumber);
@@ -67,9 +60,6 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
         wallpapers.addAll(newWallpapers);
       });
     } catch (e) {
-      // setState(() {
-      //   isLoading = false;
-      // });
       if (kDebugMode) {
         print('Failed to load wallpapers: $e');
       }
@@ -81,7 +71,6 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
       final random = Random();
       setState(() {
         randomWallpaper = wallpapers[random.nextInt(wallpapers.length)];
-        // isLoading = false;
       });
     }
   }
@@ -102,11 +91,11 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
                     width: double.infinity,
                     useOldImageOnUrlChange: true,
                     fadeOutDuration: const Duration(milliseconds: 500),
-                    placeholder: (context, url) => const Center(
+                    placeholder: (context, url) => Center(
                           child: SizedBox(
                             width: 150,
                             height: 150,
-                            child: CircularProgressIndicator(strokeWidth: 3.0),
+                            child: CircularIndicator(),
                           ),
                         ))
                 : Container(),
@@ -127,13 +116,7 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
                     const SizedBox(width: 10),
                     Expanded(
                         child: TextField(
-                      // autofocus: true,
                       controller: _searchController,
-                      // onChanged: (value) => {
-                      //   setState(() {
-                      //     inputText = value;
-                      //   })
-                      // },
                       onSubmitted: (_) => _search(),
                       style: const TextStyle(
                         color: Colors.black,
@@ -165,10 +148,7 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
                               size: 24,
                             ),
                           ),
-                          suffixIcon:
-                              // inputText != ''
-                              //     ?
-                              GestureDetector(
+                          suffixIcon: GestureDetector(
                             onTap: () {
                               _searchController.clear();
                             },
@@ -180,9 +160,7 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
                                 size: 24,
                               ),
                             ),
-                          )
-                          // : null,
-                          ),
+                          )),
                     )),
                   ],
                 ),

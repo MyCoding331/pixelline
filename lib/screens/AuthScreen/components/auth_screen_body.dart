@@ -2,9 +2,11 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pixelline/services/appwrite_sevices.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
 import 'package:pixelline/util/util.dart';
 import 'package:pixelline/wallpaper_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreenBody extends StatefulWidget {
   const AuthScreenBody({super.key});
@@ -26,9 +28,9 @@ class _AuthScreenBodyState extends State<AuthScreenBody> {
 
   String name = '';
 
-  String collectionId = '64b2636640c2fa966117';
+  String collectionId = dotenv.env['APPWRITE_COLLECTION_ID_USERS']!;
 
-  String databaseId = '649033920793f53a7112';
+  String databaseId = dotenv.env['APPWRITE_DATABASE_ID']!;
 
   late String randomString;
 
@@ -109,7 +111,9 @@ class _AuthScreenBodyState extends State<AuthScreenBody> {
     try {
       await account.createEmailSession(email: email, password: password);
       showSnackBar(context, 'Login successful!');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
 
+      await prefs.setString('userPassword', password);
       await Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -344,12 +348,11 @@ class _AuthScreenBodyState extends State<AuthScreenBody> {
                           ),
                         ),
                         child: (isLogin || isSignUp)
-                            ? const SizedBox(
+                            ? SizedBox(
                                 // margin: EdgeInsets.all(12),
                                 height: 22, width: 22,
-                                child: CircularProgressIndicator(
+                                child: CircularIndicator(
                                   color: Colors.white,
-                                  strokeWidth: 3.0,
                                 ),
                               )
                             : Text(

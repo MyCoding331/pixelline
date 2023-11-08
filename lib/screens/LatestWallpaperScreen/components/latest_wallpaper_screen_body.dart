@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pixelline/services/api_service.dart';
-import 'package:pixelline/services/wallpaper.dart';
+import 'package:pixelline/services/Api/api_service.dart';
+import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/CardScreen/card_screen.dart';
+import 'package:pixelline/util/util.dart';
 
 class LatestWallpaperScreenBody extends StatefulWidget {
   const LatestWallpaperScreenBody({super.key});
@@ -87,9 +88,7 @@ class _LatestWallpaperScreenBodyState extends State<LatestWallpaperScreenBody> {
           ),
           if (isLoading)
             // Loader widget displayed in the center of the screen
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
+            CircularIndicator(),
         ],
       ),
     );
