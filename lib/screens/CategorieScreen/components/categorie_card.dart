@@ -14,6 +14,7 @@ class CategorieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // print('link is $link');
     return GestureDetector(
       onTap: () {
         Navigator.push(

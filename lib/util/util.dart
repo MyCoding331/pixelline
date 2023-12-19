@@ -348,3 +348,7 @@ class CircularIndicator extends StatelessWidget {
     );
   }
 }
+
+String collectionId = dotenv.env['APPWRITE_COLLECTION_ID_USERS']!;
+
+String databaseId = dotenv.env['APPWRITE_DATABASE_ID']!;

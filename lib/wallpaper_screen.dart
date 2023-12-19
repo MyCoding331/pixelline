@@ -3,7 +3,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:pixelline/services/Api/api_service.dart';
 import 'package:pixelline/components/AdUnits/ads_units_ids.dart';
 import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
 import 'package:pixelline/components/TabBar/tab_bar.dart';
@@ -12,6 +11,8 @@ import 'package:pixelline/screens/CategorieScreen/categorie_screen.dart';
 import 'package:pixelline/screens/FavoriteScreen/favorite_screen.dart';
 import 'package:pixelline/screens/SearchScreen/search_screen.dart';
 import 'package:pixelline/screens/SettingScreen/setting_screen.dart';
+import 'package:pixelline/util/functions.dart';
+import 'package:pixelline/util/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WallpaperScreen extends StatefulWidget {
@@ -23,11 +24,7 @@ class WallpaperScreen extends StatefulWidget {
 
 class _WallpaperScreenState extends State<WallpaperScreen>
     with TickerProviderStateMixin {
-  final APIService apiService = APIService(params: "popular/1");
   int pageIndex = 0;
-
-  List<String> favorites = [];
-
   double iconSize = 25.0;
 
   BannerAd? _bannerAd;
@@ -41,26 +38,30 @@ class _WallpaperScreenState extends State<WallpaperScreen>
     checkUserSession();
   }
 
-  void initializeingBanner() {
-    BannerAd(
+  void initializeingBanner() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await BannerAd(
       adUnitId: adsBanner,
       request: const AdRequest(),
-      size: AdSize.fullBanner,
+      size: AdSize.fluid,
       listener: BannerAdListener(
-        onAdLoaded: (ad) {
+        onAdLoaded: (ad) async {
           setState(() {
             _bannerAd = ad as BannerAd;
           });
+          await prefs.setBool('BANNER_AD', true);
         },
-        onAdFailedToLoad: (ad, err) {
+        onAdFailedToLoad: (ad, err) async {
           if (kDebugMode) {
             print('Failed to load a banner ad: ${err.message}');
           }
-          ad.dispose();
+          await prefs.setBool('BANNER_AD', false);
+          // ad.dispose();
         },
       ),
     ).load();
-    BannerAd(
+
+    await BannerAd(
       adUnitId: 'ca-app-pub-3940256099942544/6300978111',
       request: const AdRequest(),
       size: AdSize.fullBanner,
@@ -74,23 +75,16 @@ class _WallpaperScreenState extends State<WallpaperScreen>
           if (kDebugMode) {
             print('Failed to load a banner ad: ${err.message}');
           }
-          ad.dispose();
+          setState(() {
+            _newBannerAd = ad as BannerAd;
+          });
+          // ad.dispose();
         },
       ),
     ).load();
   }
 
-  Future<void> setUserDetails() async {
-    final prefs = await SharedPreferences.getInstance();
-    final promise = await account.get();
-    await prefs.setString('userEmail', promise.email);
-    await prefs.setString('userName', promise.name);
-    if (kDebugMode) {
-      print('userDetails has been set sucessfully');
-    }
-  }
-
-  final pages = <Widget>[];
+  // final pages = <Widget>[];
 
   @override
   void dispose() {
@@ -99,33 +93,18 @@ class _WallpaperScreenState extends State<WallpaperScreen>
     super.dispose();
   }
 
-  Future<bool> checkUserSession() async {
-    try {
-      // Check if the user session exists
-      await account.get();
-      return true;
-    } catch (e) {
-      // Handle any errors that occurred while checking the user session
-      if (kDebugMode) {
-        print('Error: $e');
-      }
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    pages.addAll([
-      const TabBarContainer(),
-      const FavoriteScreen(),
-      const CategorieScreen(),
-      const SearchScreen(),
-    ]);
-    final screenSize = MediaQuery.of(context).size;
-    double screenWidth = MediaQuery.of(context).size.width;
+    // pages.addAll([
+    //   const TabBarContainer(),
+    //   const FavoriteScreen(),
+    //   const CategorieScreen(),
+    //   const SearchScreen(),
+    // ]);
+
     if (kDebugMode) {
       print(
-        'Screen Width: ${screenSize.width.toStringAsFixed(2)}\nScreen Height: ${screenSize.height.toStringAsFixed(2)}',
+        'Screen Width: ${width.toStringAsFixed(2)}\nScreen Height: ${height.toStringAsFixed(2)}',
       );
     }
     return DefaultTabController(
@@ -144,80 +123,21 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                leading: Builder(
-                  builder: (BuildContext context) {
-                    return PopupMenuButton<String>(
-                      onSelected: (String value) async {
-                        if (value == 'profile') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SettingScreen(),
-                            ),
-                          );
-                        }
-                        if (value == 'logout') {
-                          await account.deleteSessions();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AuthScreen(),
-                            ),
-                          );
-                        }
-                        if (kDebugMode) {
-                          print('Selected value: $value');
-                        }
-                      },
-                      tooltip: "profile",
-                      position: PopupMenuPosition.under,
-                      elevation: 4,
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'profile',
-                          child: ListTile(
-                            leading: Icon(Icons.settings),
-                            title: Text(
-                              'Profile',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'logout',
-                          child: ListTile(
-                            leading: Icon(Icons.logout_rounded),
-                            title: Text(
-                              'Logout',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                      icon: const Icon(
-                        Icons.person_rounded,
-                        color: Colors.black,
-                      ),
-                    );
-                  },
-                ),
+                leading: leadingWidget(),
                 shadowColor: Colors.transparent,
                 backgroundColor: Colors.white,
               ),
+        // appBar(
+        //     text: _getAppBarTitle(pageIndex),
+        //     leading: leadingWidget(),
+        //     backButton: false),
         body: Align(
           alignment: Alignment.bottomCenter,
           child: Stack(
             children: [
               Row(
                 children: [
-                  if (screenWidth >= 700)
+                  if (width >= 700)
                     Expanded(
                       child: SizedBox(
                         width: 100,
@@ -321,12 +241,20 @@ class _WallpaperScreenState extends State<WallpaperScreen>
                       ),
                     ),
                   Expanded(
-                    flex: screenWidth >= 700 ? 7 : 1,
-                    child: pages[pageIndex],
+                    flex: width >= 700 ? 7 : 1,
+                    child: IndexedStack(
+                      index: pageIndex,
+                      children: const [
+                        TabBarContainer(),
+                        FavoriteScreen(),
+                        CategorieScreen(),
+                        SearchScreen(),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              if (screenWidth <= 700)
+              if (width <= 700)
                 Positioned(
                   bottom: 10,
                   left: 20,
@@ -408,6 +336,72 @@ class _WallpaperScreenState extends State<WallpaperScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Builder leadingWidget() {
+    return Builder(
+      builder: (BuildContext context) {
+        return PopupMenuButton<String>(
+          onSelected: (String value) async {
+            if (value == 'profile') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingScreen(),
+                ),
+              );
+            }
+            if (value == 'logout') {
+              await account.deleteSessions();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AuthScreen(),
+                ),
+              );
+            }
+            if (kDebugMode) {
+              print('Selected value: $value');
+            }
+          },
+          tooltip: "profile",
+          position: PopupMenuPosition.under,
+          elevation: 4,
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'profile',
+              child: ListTile(
+                leading: Icon(Icons.settings),
+                title: Text(
+                  'Profile',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const PopupMenuItem<String>(
+              value: 'logout',
+              child: ListTile(
+                leading: Icon(Icons.logout_rounded),
+                title: Text(
+                  'Logout',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          icon: const Icon(
+            Icons.person_rounded,
+            color: Colors.black,
+          ),
+        );
+      },
     );
   }
 }

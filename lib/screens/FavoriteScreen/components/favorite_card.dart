@@ -51,6 +51,8 @@ class FavoriteCard extends StatelessWidget {
                               builder: (context) => DetailScreen(
                                 imageUrl: favorite.url,
                                 wallpaper: favorite,
+                                imageId: favorite.id
+                                    .replaceAll('https://hdqwalls.com', ''),
                               ),
                             ),
                           );

@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:pixelline/components/AdUnits/ads_units_ids.dart';
+import 'package:pixelline/helper/databse.dart';
 import 'package:pixelline/services/Api/api_service.dart';
 import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/SimilarScreen/similar_screen.dart';
@@ -49,7 +50,7 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
   List<Wallpaper> similarWallpapers = [];
   final APIService apiService = APIService(params: "similar");
   late final WallpaperStorage<Wallpaper> wallpaperStorage;
-
+  var dbHelper = WallpaperDatabaseHelper();
   int _selectedIndex = 0;
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
@@ -309,7 +310,7 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
   }
 
   Future<void> loadFavorites() async {
-    final jsonStringList = await wallpaperStorage.getDataList();
+    final jsonStringList = await dbHelper.getWallpapers();
     await wallpaperStorage.restoreData();
     setState(() {
       documents = jsonStringList;
@@ -317,16 +318,14 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
   }
 
   Future<void> addToFavorites(Wallpaper item) async {
-    Wallpaper videos = item;
-    documents.add(item);
-    // print(item.url);
-    await wallpaperStorage.storeData(videos, context).then(
+    Wallpaper wall = item;
+    await dbHelper.insertWallpaper(wall).then(
           (_) => loadFavorites(),
         );
   }
 
   Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id, context).then(
+    await dbHelper.deleteWallpaper(id).then(
           (_) => loadFavorites(),
         );
   }
@@ -562,9 +561,7 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
             ),
-            child: TagScreen(
-              param: widget.imageId,
-            ),
+            child: TagScreen(param: widget.imageId),
           );
         } else {
           return Container(
@@ -633,11 +630,15 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
       if (kDebugMode) {
         print('similarOnSwipe $similarOnSwipe');
       }
+
       final List<Wallpaper>? newWallpapers = await apiService.similarFetch(
-        widget.imageId,
+        widget.imageId.replaceAll('https://hdqwalls.com', ''),
       );
       final currentWallpaper =
           Wallpaper(id: widget.imageId, url: widget.imageUrl);
+      if (kDebugMode) {
+        print('the currentWallpapers is ${currentWallpaper.url}');
+      }
       similarOnSwipe == true
           ? setState(() {
               similarWallpapers.addAll([
@@ -684,6 +685,9 @@ class _DetailScreenBodyState extends State<DetailScreenBody> {
 
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      print('widget.imageId is ${widget.imageId}');
+    }
     if (isLoading) {
       return CircularIndicator();
     } else {

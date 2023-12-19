@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pixelline/screens/CardScreen/card_screen.dart';
 import 'package:pixelline/services/Api/api_service.dart';
 import 'package:pixelline/services/types/wallpaper.dart';
+import 'package:pixelline/util/functions.dart';
 import 'package:pixelline/util/util.dart';
 
 class CommonScreenBody extends StatefulWidget {
@@ -21,12 +22,12 @@ class _CommonScreenBodyState extends State<CommonScreenBody> {
 
   int pageNumber = 1;
 
-  bool isLoading = true;
+  bool isLoading = false;
 
   List<String> favorites = [];
 
   late APIService apiService =
-      APIService(params: "search/views/${widget.passedData}");
+      APIService(params: "search/${widget.passedData}");
 
   @override
   void initState() {
@@ -38,8 +39,10 @@ class _CommonScreenBodyState extends State<CommonScreenBody> {
     if (isLoading) return;
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      setState(() {
+        isLoading = true;
+      });
+      List<Wallpaper> newWallpapers = await commonFetch(apiService, pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);
@@ -79,7 +82,7 @@ class _CommonScreenBodyState extends State<CommonScreenBody> {
               content: wallpapers,
             ),
           ),
-          if (isLoading) CircularIndicator(),
+          if (isLoading == true) CircularIndicator(),
         ],
       ),
     );

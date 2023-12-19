@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:pixelline/util/functions.dart';
 import 'package:pixelline/util/util.dart';
 import 'package:pixelline/wallpaper_screen.dart';
 
@@ -27,14 +28,8 @@ class _LocalAuthScreenBodyState extends State<LocalAuthScreenBody> {
   Future<void> _authenticate(BuildContext context) async {
     bool authenticated = false;
     try {
-      authenticated = await _localAuthentication.authenticate(
-        localizedReason: 'Authenticate To Access The App', // Displayed to user
-        options: const AuthenticationOptions(
-          biometricOnly: false,
-          useErrorDialogs: true,
-          stickyAuth: true,
-        ),
-      );
+      authenticated =
+          await localAuthFunction(authenticated, _localAuthentication);
       setState(() {
         if (authenticated) {
           isAuth = true;

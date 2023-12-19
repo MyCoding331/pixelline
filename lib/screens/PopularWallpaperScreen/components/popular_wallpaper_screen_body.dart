@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pixelline/services/Api/api_service.dart';
 import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/CardScreen/card_screen.dart';
+import 'package:pixelline/util/functions.dart';
 import 'package:pixelline/util/util.dart';
 
 class PopularWallpaperScreenBody extends StatefulWidget {
@@ -38,7 +39,7 @@ class _PopularWallpaperScreenBodyState
 
     try {
       final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+          await commonFetch(apiService, pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);

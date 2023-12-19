@@ -1,8 +1,9 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
+import 'package:pixelline/helper/databse.dart';
 import 'package:pixelline/screens/FavoriteScreen/components/favorite_card.dart';
-import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
 import 'package:pixelline/services/types/wallpaper.dart';
+import 'package:pixelline/util/functions.dart';
 import 'package:pixelline/util/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,7 +24,7 @@ class _FavoriteScreenBodyState extends State<FavoriteScreenBody> {
   List<Wallpaper> favorites = [];
   int currentPage = 1;
   SortOption currentSortOption = SortOption.newest;
-
+  var dbHelper = WallpaperDatabaseHelper();
   bool isLoading = true;
   late bool isNew;
   late bool isOld;
@@ -43,17 +44,16 @@ class _FavoriteScreenBodyState extends State<FavoriteScreenBody> {
     isNew = true;
     isOld = false;
     isNSFW = false;
+
     showNoFavoritesMessage();
     initializing().then(
       (_) => loadFavorites(),
     );
-
-    subscribe();
   }
 
   Future<void> initializing() async {
     final pref = await SharedPreferences.getInstance();
-
+    // subscribe();
     setState(
       () {
         prefs = pref;
@@ -68,40 +68,18 @@ class _FavoriteScreenBodyState extends State<FavoriteScreenBody> {
   }
 
   Future<void> loadFavorites() async {
-    final jsonStringList = await wallpaperStorage.getDataList();
+    List<Wallpaper> jsonStringList =
+        await loadFavs(wallpaperStorage: wallpaperStorage);
 
-    await wallpaperStorage.restoreData();
+    dynamic data = await dbHelper.getWallpapers();
     setState(() {
-      favorites = jsonStringList;
+      favorites = data;
     });
   }
 
-  void subscribe() {
-    subscribtion = realtime.subscribe(['documents']);
-    subscribtion.stream.listen((event) {
-      final eventType = event.events;
-      final payload = event.payload;
-
-      if (eventType.contains('databases.*.collections.*.documents.*.create')) {
-        handleDocumentCreation(payload);
-      } else if (eventType
-          .contains('databases.*.collections.*.documents.*.delete')) {
-        handleDocumentUpdate(payload);
-      }
-    });
-  }
-
-  void handleDocumentCreation(Map<String, dynamic> payload) {
-    setState(() {
-      loadFavorites();
-    });
-  }
-
-  void handleDocumentUpdate(Map<String, dynamic> payload) {
-    setState(() {
-      loadFavorites();
-    });
-  }
+  // void subscribe() {
+  //   realtimeUpdate(subscribtion: subscribtion, loadFavorites: loadFavorites);
+  // }
 
   void showNoFavoritesMessage() {
     Future.delayed(const Duration(seconds: 2), () {
@@ -120,10 +98,14 @@ class _FavoriteScreenBodyState extends State<FavoriteScreenBody> {
     return Scaffold(
       body: Stack(
         children: [
-          FavoriteCard(
-            filteredFavorites: filteredFavorites,
-            scrollController: _scrollController,
-          ),
+          FutureBuilder(
+              future: loadFavorites(),
+              builder: (context, snapShot) {
+                return FavoriteCard(
+                  filteredFavorites: filteredFavorites,
+                  scrollController: _scrollController,
+                );
+              }),
           if (isLoading) CircularIndicator(),
         ],
       ),

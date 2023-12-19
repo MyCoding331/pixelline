@@ -22,11 +22,11 @@ class _TabBarContainerState extends State<TabBarContainer> {
   int _selectedIndex = 0;
   bool isSubscription = false;
 
-  final List<Widget> _pages = [
-    const LatestWallpaperScreen(),
-    const PopularWallpaperScreen(),
-    const RandomWallpaperScreen(),
-  ];
+  // final List<Widget> _pages = [
+  //   const LatestWallpaperScreen(),
+  //   const PopularWallpaperScreen(),
+  //   const RandomWallpaperScreen(),
+  // ];
 
   @override
   void initState() {
@@ -72,7 +72,14 @@ class _TabBarContainerState extends State<TabBarContainer> {
       body: Column(
         children: [
           Expanded(
-            child: _pages[_selectedIndex],
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: const [
+                LatestWallpaperScreen(),
+                PopularWallpaperScreen(),
+                RandomWallpaperScreen(),
+              ],
+            ),
           ),
         ],
       ),

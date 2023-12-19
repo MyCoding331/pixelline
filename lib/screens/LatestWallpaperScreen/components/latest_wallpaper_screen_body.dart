@@ -1,9 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pixelline/providers/wallpapers_provider.dart';
 import 'package:pixelline/services/Api/api_service.dart';
 import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/CardScreen/card_screen.dart';
+import 'package:pixelline/util/functions.dart';
 import 'package:pixelline/util/util.dart';
+import 'package:provider/provider.dart';
 
 class LatestWallpaperScreenBody extends StatefulWidget {
   const LatestWallpaperScreenBody({super.key});
@@ -44,9 +49,10 @@ class _LatestWallpaperScreenBodyState extends State<LatestWallpaperScreenBody> {
     });
 
     try {
-      final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
-
+      List<Wallpaper> newWallpapers = await commonFetch(apiService, pageNumber);
+      // WallpaperProvider provider =
+      //     Provider.of<WallpaperProvider>(context, listen: false);
+      // provider.storeWallpaper(newWallpapers);
       setState(() {
         wallpapers.addAll(newWallpapers);
         pageNumber++;

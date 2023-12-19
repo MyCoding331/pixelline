@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:pixelline/screens/CommonScreen/common_screen.dart';
 import 'package:pixelline/services/Api/api_service.dart';
 import 'package:pixelline/services/types/wallpaper.dart';
+import 'package:pixelline/util/functions.dart';
 import 'package:pixelline/util/util.dart';
 
 class SearchScreenBody extends StatefulWidget {
@@ -54,7 +55,7 @@ class _SearchScreenBodyState extends State<SearchScreenBody> {
   Future<void> fetchWallpapers() async {
     try {
       final List<Wallpaper> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+          await commonFetch(apiService, pageNumber);
 
       setState(() {
         wallpapers.addAll(newWallpapers);

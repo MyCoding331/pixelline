@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pixelline/screens/AuthScreen/auth_screen.dart';
 import 'package:pixelline/screens/SettingScreen/components/opt_component.dart';
 import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
+import 'package:pixelline/util/functions.dart';
 import 'package:pixelline/util/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -20,34 +21,20 @@ class SettingScreenBody extends StatefulWidget {
 
 class _SettingScreenBodyState extends State<SettingScreenBody> {
   late String name;
-
   String updatename = '';
-
   late String email;
-
   String updateemail = '';
-
   late String phoneNumber;
-
   String updatephoneNumber = '';
   String country = '';
-
   bool isLoading = true;
-
   bool isSubscribed = false;
-
   late bool isTextFieldEnabled;
-
   Uint8List? avatarImage;
-
   bool isNSFWEnabled = false;
-
   bool isLocked = false;
-
   bool similarOnSwipe = false;
-
   bool isNSFWToggled = false;
-
   bool isLockedToggled = false;
   bool emailVarificationStatus = false;
   bool phoneVarificationStatus = false;
@@ -99,54 +86,37 @@ class _SettingScreenBodyState extends State<SettingScreenBody> {
     }
   }
 
-  Future<void> _updateUserDetails() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      final password = prefs.getString('userPassword');
-      await account.updateName(name: updatename);
-      await account.updatePhone(
-          phone: '+91$updatephoneNumber', password: password!);
-
-      if (kDebugMode) {
-        print('name update to $name successfully');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Authentication failed: $e');
-      }
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Name Update Failed'),
-          content: const Text('Please check your name format'),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   Future<void> fetchAvatar() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final image = prefs.getString('avatarImage') ?? '';
-    dynamic avatar = image.isEmpty
-        ? await avatars.getInitials(
-            name: name,
-            width: 120,
-            height: 120,
-          )
-        : avatars.getImage(url: image);
+    if (kDebugMode) {
+      print('avatar localImage is $image');
+    }
+    try {
+      dynamic avatar;
 
-    setState(() {
-      avatarImage = avatar;
-    });
+      // if (image.isEmpty) {
+      // If image URL is empty, get initials
+      avatar = await avatars.getInitials(
+        name: name, // Make sure 'name' is defined
+        width: 120,
+        height: 120,
+      );
+      // }
+      // else {
+      //   // If image URL is not empty, try to fetch the image
+      //   avatar = await avatars.getImage(url: image);
+      // }
+
+      setState(() {
+        avatarImage = avatar;
+      });
+    } catch (e) {
+      // Handle exceptions, such as 404 errors
+      if (kDebugMode) {
+        print('Error fetching avatar: $e');
+      }
+    }
   }
 
   void _toggleTextFieldEnabled() {
@@ -709,7 +679,8 @@ class _SettingScreenBodyState extends State<SettingScreenBody> {
   ElevatedButton saveChangesButton() {
     return ElevatedButton(
       onPressed: () {
-        _updateUserDetails();
+        updateUserDetails(updatename, updatephoneNumber)
+            .then((_) => loadUsers());
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.black,
@@ -949,7 +920,7 @@ class AvatarComp extends StatefulWidget {
 }
 
 class _AvatarCompState extends State<AvatarComp> {
-  String appwriteBucketId = '6544d3ba2b558ae312fd';
+  String appwriteBucketId = '654b796c3e87a380dc11';
 
   String profileImage = '';
   final picker = ImagePicker();
@@ -989,19 +960,21 @@ class _AvatarCompState extends State<AvatarComp> {
       );
 
       String fileId = response.$id;
-      final localFileId = await prefs.setString('local', fileId);
+      await prefs.setString('local', fileId);
 
-      await storage.getFileDownload(
-        fileId: fileId,
-        bucketId: appwriteBucketId,
-      );
-
+      // await storage.getFileDownload(
+      //   fileId: fileId,
+      //   bucketId: appwriteBucketId,
+      // );
+      if (kDebugMode) {
+        print('fileId is $fileId');
+      }
       setState(() {
         profileImage =
-            'https://cloud.appwrite.io/v1/storage/buckets/$appwriteBucketId/files/$localFileId/view?project=6544d39c4a5fbfb5bfd2&mode=admin';
+            'https://cloud.appwrite.io/v1/storage/buckets/$appwriteBucketId/files/$fileId/view?project=6490223d4ceb25b1b8f8&mode=admin';
       });
       await prefs.setString('avatarImage',
-          'https://cloud.appwrite.io/v1/storage/buckets/$appwriteBucketId/files/$localFileId/view?project=6544d39c4a5fbfb5bfd2&mode=admin');
+          'https://cloud.appwrite.io/v1/storage/buckets/$appwriteBucketId/files/$fileId/view?project=6490223d4ceb25b1b8f8 &mode=admin');
     }
   }
 

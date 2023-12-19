@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, must_be_immutable
+// ignore_for_file: library_private_types_in_public_api, must_be_immutable, avoid_print
 
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
@@ -7,12 +7,14 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:like_button/like_button.dart';
 import 'package:pixelline/components/AdUnits/ads_units_ids.dart';
 import 'package:pixelline/components/ImageComponent/image_component.dart';
+import 'package:pixelline/helper/databse.dart';
 import 'package:pixelline/screens/AdScreen/ad_screen.dart';
 import 'package:pixelline/services/Appwrite/appwrite_sevices.dart';
 import 'package:pixelline/services/types/wallpaper.dart';
 import 'package:pixelline/screens/DetailScreen/detail_screen.dart';
 import 'package:pixelline/util/util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_sizer/flutter_sizer.dart';
 
 class CardScreenBody extends StatefulWidget {
   String? type;
@@ -27,12 +29,16 @@ class CardScreenBody extends StatefulWidget {
 
 class _CardScreenBodyState extends State<CardScreenBody> {
   List<Wallpaper> documents = [];
-
+  var dbHelper = WallpaperDatabaseHelper();
   late String documentId;
   bool isAdded = true;
   late RealtimeSubscription subscribtion;
   late final WallpaperStorage<Wallpaper> wallpaperStorage;
   NativeAd? nativeAd;
+  bool isLoading = true;
+  bool? isBannerAdLoaded;
+  bool? isNativeAdLoaded;
+
   @override
   void initState() {
     super.initState();
@@ -43,27 +49,37 @@ class _CardScreenBodyState extends State<CardScreenBody> {
   }
 
   Future<void> initializing() async {
-    final prefs = await SharedPreferences.getInstance();
-    nativeAd = NativeAd(
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isBannerAdLoaded = prefs.getBool('BANNER_AD');
+    });
+    await NativeAd(
       adUnitId: adsNative,
       request: const AdRequest(),
       nativeTemplateStyle:
           NativeTemplateStyle(templateType: TemplateType.medium),
       listener: NativeAdListener(
-        onAdLoaded: (ad) {
+        onAdLoaded: (ad) async {
+          print('the loaded ad is ${ad.responseInfo!.responseId}');
           setState(() {
             nativeAd = ad as NativeAd;
           });
+          await prefs.setBool('NATIVE_AD', true);
         },
-        onAdFailedToLoad: (ad, err) {
+        onAdFailedToLoad: (ad, err) async {
           if (kDebugMode) {
-            print('Failed to load a banner ad: ${err.message}');
+            print('Failed to load a card ad: ${err.message}');
+            print('the failed ad is ${ad.responseInfo.toString()}');
           }
-          ad.dispose();
+          await prefs.setBool('NATIVE_AD', false);
+          // setState(() {
+          //   nativeAd = ad as NativeAd;
+          // });
+          // ad.dispose();
         },
       ),
-    );
-    nativeAd!.load();
+    ).load();
+
     final newData = WallpaperStorage<Wallpaper>(
         storageKey: 'favorites',
         fromJson: (json) => Wallpaper.fromJson(json),
@@ -71,6 +87,8 @@ class _CardScreenBodyState extends State<CardScreenBody> {
         prefs: prefs);
     setState(() {
       wallpaperStorage = newData;
+
+      isNativeAdLoaded = prefs.getBool('NATIVE_AD');
     });
   }
 
@@ -94,131 +112,149 @@ class _CardScreenBodyState extends State<CardScreenBody> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    print('native ad is $nativeAd');
+    print('native ad bool is $isNativeAdLoaded');
     if (kDebugMode) {
       print(widget.type);
     }
-    return Column(
-      children: [
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Container(
-                  // height: widget.type!.contains('similar') ? 25 : 70,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0, vertical: 8.0),
-                  child: widget.type!.contains('similar')
-                      ? const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'Similar :',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        )
-                      : null,
+    if (isLoading == true) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      return Column(
+        children: [
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: isBannerAdLoaded == true ? 8.h : 0,
+                  ),
                 ),
-              ),
-              SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: _getCrossAxisCount(context),
-                  mainAxisSpacing: 6,
-                  crossAxisSpacing: 6,
-                  mainAxisExtent: 300,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if ((screenWidth <= 600
-                            ? index % 30 == 0
-                            : index % 30 == 0) &&
-                        index != 0 &&
-                        nativeAd != null) {
-                      // Show the ad after every 10 cards (adjust as needed)
-                      return AdScreen(
-                        ad: nativeAd!,
-                      );
-                    } else {
-                      // Show a regular card
-                      final Wallpaper wallpaper =
-                          widget.content[index - (index ~/ 30)];
-                      final newImage = wallpaper.url;
-
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailScreen(
-                                imageUrl: wallpaper.url,
-                                imageId: wallpaper.id,
-                                wallpaper: wallpaper,
+                SliverToBoxAdapter(
+                  child: Container(
+                    // height: widget.type!.contains('similar') ? 25 : 70,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15.0, vertical: 8.0),
+                    child: widget.type!.contains('similar')
+                        ? const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Similar :',
+                              style: TextStyle(
+                                fontSize: 25,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ).then((_) {
-                            loadFavorites();
-                          });
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12.0),
-                          child: Stack(
-                            children: [
-                              ImageComponent(
-                                  imagePath:
-                                      newImage), // Change to your image source
+                          )
+                        : null,
+                  ),
+                ),
+                SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: _getCrossAxisCount(context),
+                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 6,
+                    mainAxisExtent: 300,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if ((screenWidth <= 600
+                              ? index % 25 == 0
+                              : index % 30 == 0) &&
+                          index != 0 &&
+                          nativeAd != null) {
+                        // Show the ad after every 10 cards (adjust as needed)
+                        return AdScreen(
+                          ad: nativeAd!,
+                        );
+                      } else {
+                        // Show a regular card
+                        final Wallpaper wallpaper = isNativeAdLoaded == true ||
+                                nativeAd != null
+                            ? widget.content[
+                                (index - (index ~/ 30)) % widget.content.length]
+                            : widget.content[index % widget.content.length];
 
-                              Positioned(
-                                bottom: 10,
-                                right: 10,
-                                child: Center(
-                                  child: LikeButton(
-                                    onTap: (isLiked) => onLikeButtonTap(
-                                        isLiked, context, wallpaper, index),
-                                    size: 42,
-                                    likeBuilder: (bool isLiked) {
-                                      bool isInFavorites =
-                                          checkIfInFavorites(wallpaper.id);
-                                      return ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(20000),
-                                        child: Container(
-                                          width: 30,
-                                          height: 30,
-                                          color: Colors.black26,
-                                          child: Icon(
-                                            Icons.favorite,
-                                            color: isInFavorites
-                                                ? Colors.red
-                                                : Colors.white,
-                                            size: 22,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                        final newImage = wallpaper.url;
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailScreen(
+                                  imageUrl: wallpaper.url,
+                                  imageId: wallpaper.id
+                                      .replaceAll('https://hdqwalls.com', ''),
+                                  wallpaper: wallpaper,
                                 ),
                               ),
-                            ],
+                            ).then((_) {
+                              loadFavorites();
+                            });
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12.0),
+                            child: Stack(
+                              children: [
+                                ImageComponent(
+                                    imagePath:
+                                        newImage), // Change to your image source
+
+                                Positioned(
+                                  bottom: 10,
+                                  right: 10,
+                                  child: Center(
+                                    child: LikeButton(
+                                      onTap: (isLiked) => onLikeButtonTap(
+                                          isLiked, context, wallpaper, index),
+                                      size: 42,
+                                      likeBuilder: (bool isLiked) {
+                                        bool isInFavorites =
+                                            checkIfInFavorites(wallpaper.id);
+                                        return ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(20000),
+                                          child: Container(
+                                            width: 30,
+                                            height: 30,
+                                            color: Colors.black26,
+                                            child: Icon(
+                                              Icons.favorite,
+                                              color: isInFavorites
+                                                  ? Colors.red
+                                                  : Colors.white,
+                                              size: 22,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    }
-                  },
-                  childCount:
-                      widget.content.length + (widget.content.length ~/ 30),
+                        );
+                      }
+                    },
+                    childCount:
+                        widget.content.length + (widget.content.length ~/ 30),
+                  ),
                 ),
-              ),
-              const SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 30,
+                const SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 30,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    }
   }
 
   bool checkIfInFavorites(id) {
@@ -231,24 +267,34 @@ class _CardScreenBodyState extends State<CardScreenBody> {
   }
 
   Future<void> loadFavorites() async {
-    final jsonStringList = await wallpaperStorage.getDataList();
-    await wallpaperStorage.restoreData();
-    setState(() {
-      documents = jsonStringList;
-    });
+    try {
+      final jsonStringList = await dbHelper.getWallpapers();
+      // await wallpaperStorage.restoreData();
+      setState(() {
+        documents = jsonStringList;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('error is $e');
+      }
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> addToFavorites(Wallpaper item) async {
-    Wallpaper videos = item;
-    documents.add(item);
+    Wallpaper wall = item;
+    // documents.add(item);
     // print(item.url);
-    await wallpaperStorage.storeData(videos, context).then(
+    await dbHelper.insertWallpaper(wall).then(
           (_) => loadFavorites(),
         );
   }
 
   Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id, context).then(
+    await dbHelper.deleteWallpaper(id).then(
           (_) => loadFavorites(),
         );
   }
@@ -339,7 +385,8 @@ class _CardScreenBodyState extends State<CardScreenBody> {
     } else {
       // If it's not in favorites, add it and return true
       await addToFavorites(wallpaper);
-      loadFavorites();
+      // loadFavorites();
+      // await dbHelper.insertWallpaper(wallpaper);
       return true;
     }
   }
@@ -374,7 +421,7 @@ class _CardScreenBodyState extends State<CardScreenBody> {
   @override
   void dispose() {
     super.dispose();
-
+    nativeAd!.dispose();
     subscribtion.close();
   }
 }
